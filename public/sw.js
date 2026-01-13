@@ -1,11 +1,11 @@
-const CACHE_NAME = 'weight-tracker-v1';
+// Bump this to force clients to refresh cached assets after deployments.
+const CACHE_NAME = 'weight-tracker-v2';
+
+// Only cache truly static, versioned assets here (avoid caching HTML routes).
 const STATIC_ASSETS = [
-  '/',
-  '/login',
-  '/steps',
-  '/weight',
-  '/insights',
-  '/settings',
+  '/manifest.json',
+  '/icon.svg',
+  '/favicon.ico',
 ];
 
 // Install event - cache static assets
@@ -36,6 +36,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
+
+  // Never cache navigations (HTML). This prevents stale HTML referencing old chunks after deploy.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        // Offline fallback (best-effort)
+        const cachedRoot = await caches.match('/');
+        return cachedRoot || new Response('Offline', { status: 503 });
+      })
+    );
+    return;
+  }
 
   // Skip API requests - always go to network
   if (event.request.url.includes('/api/') || 
