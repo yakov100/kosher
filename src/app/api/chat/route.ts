@@ -33,6 +33,15 @@ interface UserSettings {
   weight_unit: string;
 }
 
+interface UserGamification {
+  total_xp: number;
+  level: number;
+  current_streak: number;
+  longest_streak: number;
+  total_walking_minutes_logged: number;
+  total_challenges_completed: number;
+}
+
 async function getUserContext(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never, userId: string) {
   const last30Days = getLast30Days();
   const oldestDate = last30Days[0];
@@ -72,7 +81,7 @@ async function getUserContext(supabase: ReturnType<typeof createClient> extends 
 
   const walkingRecords: StepsRecord[] = walkingResult.data ?? [];
   const weightRecords: WeightRecord[] = weightResult.data ?? [];
-  const gamification = gamificationResult.data;
+  const gamification = gamificationResult.data as UserGamification | null;
 
   // Calculate summary stats
   const totalWalkingMinutes = walkingRecords.reduce((sum, r) => sum + r.minutes, 0);
