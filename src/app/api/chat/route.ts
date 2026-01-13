@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText, UIMessage } from 'ai';
+import { streamText, type CoreMessage } from 'ai';
 import { createClient } from '@/lib/supabase/server';
 import { getToday, getLast30Days } from '@/lib/utils';
 import { z } from 'zod';
@@ -235,7 +235,7 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: google('gemini-2.0-flash'),
       system: systemPrompt,
-      messages: messages as UIMessage[],
+      messages: messages as CoreMessage[],
       temperature: 0.7,
       maxTokens: 1000,
     });
