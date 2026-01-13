@@ -128,7 +128,7 @@ export function useGamification() {
     if (!gamData) {
       const { data: newData } = await getSupabase()
         .from('user_gamification')
-        .insert({ user_id: user.id })
+        .insert({ user_id: user.id } as never)
         .select()
         .single()
       gamData = newData
@@ -151,8 +151,8 @@ export function useGamification() {
       .select('*, achievements(*)')
       .eq('user_id', user.id)
 
-    const unlocked = userAchData?.map(ua => ({
-      ...(ua.achievements as unknown as Achievement),
+    const unlocked = userAchData?.map((ua: { achievements: unknown; unlocked_at: string }) => ({
+      ...(ua.achievements as Achievement),
       unlocked_at: ua.unlocked_at
     })) || []
 
@@ -177,7 +177,7 @@ export function useGamification() {
         total_xp: newTotalXP,
         level: newLevel,
         updated_at: new Date().toISOString()
-      })
+      } as never)
       .eq('user_id', user.id)
       .select()
       .single()
@@ -186,7 +186,7 @@ export function useGamification() {
       setGamification(data)
       
       // Check for level achievements
-      await checkAchievements({ ...data, level: newLevel })
+      await checkAchievements({ ...(data as UserGamification), level: newLevel })
     }
 
     return newLevel > gamification.level
@@ -228,7 +228,7 @@ export function useGamification() {
         longest_streak: newLongest,
         last_activity_date: today,
         updated_at: new Date().toISOString()
-      })
+      } as never)
       .eq('user_id', user.id)
       .select()
       .single()
@@ -259,7 +259,7 @@ export function useGamification() {
       .update({ 
         [field]: currentValue + 1,
         updated_at: new Date().toISOString()
-      })
+      } as never)
       .eq('user_id', user.id)
       .select()
       .single()
@@ -312,7 +312,7 @@ export function useGamification() {
         // Unlock the achievement
         await getSupabase()
           .from('user_achievements')
-          .insert({ user_id: user.id, achievement_id: achievement.id })
+          .insert({ user_id: user.id, achievement_id: achievement.id } as never)
 
         // Add XP reward
         await addXP(achievement.xp_reward)

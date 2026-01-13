@@ -58,8 +58,8 @@ export function WeightChart({ data }: WeightChartProps) {
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}
             labelFormatter={(date) => formatDate(date as string, 'EEEE, d/M')}
-            formatter={(value: number, name: string) => [
-              `${value} ק״ג`,
+            formatter={(value, name) => [
+              `${value ?? 0} ק״ג`,
               name === 'value' ? 'משקל' : 'ממוצע נע',
             ]}
           />

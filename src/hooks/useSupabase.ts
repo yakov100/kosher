@@ -125,7 +125,7 @@ export function useSettings() {
           user_id: user.id,
           daily_walking_minutes_goal: 30,
           weekly_goal_days: 5,
-        })
+        } as never)
         .select()
         .single()
 
@@ -150,7 +150,7 @@ export function useSettings() {
 
     const { data, error } = await getSupabase()
       .from('weight_tracker_settings')
-      .update(updates)
+      .update(updates as never)
       .eq('user_id', user.id)
       .select()
       .single()
@@ -211,7 +211,7 @@ export function useWalking() {
     if (existing) {
       const { data, error } = await getSupabase()
         .from('steps_records')
-        .update({ minutes, note })
+        .update({ minutes, note } as never)
         .eq('id', existing.id)
         .select()
         .single()
@@ -223,7 +223,7 @@ export function useWalking() {
     } else {
       const { data, error } = await getSupabase()
         .from('steps_records')
-        .insert({ user_id: user.id, date, minutes, note })
+        .insert({ user_id: user.id, date, minutes, note } as never)
         .select()
         .single()
 
@@ -346,7 +346,7 @@ export function useWeight() {
         weight,
         recorded_at: recordedAt || new Date().toISOString(),
         note,
-      })
+      } as never)
       .select()
       .single()
 
@@ -361,7 +361,7 @@ export function useWeight() {
   const updateWeight = async (id: string, updates: Partial<WeightRecord>) => {
     const { data, error } = await getSupabase()
       .from('weight_records')
-      .update(updates)
+      .update(updates as never)
       .eq('id', id)
       .select()
       .single()
@@ -406,8 +406,9 @@ export function useDailyContent() {
       .eq('shown_date', today)
       .single()
 
-    if (tipHistory?.tips) {
-      setTip(tipHistory.tips as unknown as Tip)
+    const tipHistoryTyped = tipHistory as { tips: Tip } | null
+    if (tipHistoryTyped?.tips) {
+      setTip(tipHistoryTyped.tips)
     } else {
       // Get tips shown in last 30 days
       const thirtyDaysAgo = new Date()
@@ -434,14 +435,14 @@ export function useDailyContent() {
       const { data: availableTips } = await query
 
       if (availableTips && availableTips.length > 0) {
-        const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)]
+        const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)] as Tip
         
         // Save to history
         await getSupabase().from('daily_tip_history').insert({
           user_id: user.id,
           tip_id: randomTip.id,
           shown_date: today,
-        })
+        } as never)
 
         setTip(randomTip)
       }
@@ -455,11 +456,12 @@ export function useDailyContent() {
       .eq('shown_date', today)
       .single()
 
-    if (challengeHistory?.challenges) {
+    const challengeHistoryTyped = challengeHistory as { challenges: Challenge; completed: boolean; id: string } | null
+    if (challengeHistoryTyped?.challenges) {
       setChallenge({
-        ...(challengeHistory.challenges as unknown as Challenge),
-        completed: challengeHistory.completed,
-        historyId: challengeHistory.id,
+        ...challengeHistoryTyped.challenges,
+        completed: challengeHistoryTyped.completed,
+        historyId: challengeHistoryTyped.id,
       })
     } else {
       // Get challenges shown in last 30 days
@@ -488,7 +490,7 @@ export function useDailyContent() {
       const { data: availableChallenges } = await query
 
       if (availableChallenges && availableChallenges.length > 0) {
-        const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)]
+        const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)] as Challenge
         
         // Save to history
         const { data: newHistory } = await getSupabase()
@@ -497,15 +499,16 @@ export function useDailyContent() {
             user_id: user.id,
             challenge_id: randomChallenge.id,
             shown_date: today,
-          })
+          } as never)
           .select()
           .single()
 
-        if (newHistory) {
+        const newHistoryTyped = newHistory as { id: string } | null
+        if (newHistoryTyped) {
           setChallenge({
             ...randomChallenge,
             completed: false,
-            historyId: newHistory.id,
+            historyId: newHistoryTyped.id,
           })
         }
       }
@@ -526,7 +529,7 @@ export function useDailyContent() {
       .update({
         completed: true,
         completed_at: new Date().toISOString(),
-      })
+      } as never)
       .eq('id', challenge.historyId)
 
     if (error) throw error
