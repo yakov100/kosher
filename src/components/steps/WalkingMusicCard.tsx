@@ -146,6 +146,22 @@ function extractYouTubeVideoIdFromEmbedUrl(embedUrl: string): string | null {
   return null
 }
 
+function extractYouTubePlaylistIdFromEmbedUrl(embedUrl: string): string | null {
+  let url: URL
+  try {
+    url = new URL(embedUrl)
+  } catch {
+    return null
+  }
+  if (url.hostname !== 'www.youtube.com' && url.hostname !== 'youtube.com') return null
+  const segments = url.pathname.split('/').filter(Boolean)
+  // /embed/videoseries?list=...
+  if (segments[0] === 'embed' && segments[1] === 'videoseries') {
+    return url.searchParams.get('list')
+  }
+  return null
+}
+
 type RelatedVideo = {
   videoId: string
   title: string
@@ -221,6 +237,18 @@ export function WalkingMusicCard() {
     if (provider !== 'youtube') return null
     return extractYouTubeVideoIdFromEmbedUrl(embedUrl)
   }, [provider, embedUrl])
+
+  const youtubePlaylistId = useMemo(() => {
+    if (provider !== 'youtube') return null
+    return extractYouTubePlaylistIdFromEmbedUrl(embedUrl)
+  }, [provider, embedUrl])
+
+  const youtubeExternalUrl = useMemo(() => {
+    if (provider !== 'youtube') return null
+    if (youtubeVideoId) return `https://www.youtube.com/watch?v=${youtubeVideoId}`
+    if (youtubePlaylistId) return `https://www.youtube.com/playlist?list=${youtubePlaylistId}`
+    return null
+  }, [provider, youtubeVideoId, youtubePlaylistId])
 
   // Fetch "related videos" like YouTube side panel (requires YOUTUBE_API_KEY on server).
   useEffect(() => {
@@ -381,6 +409,27 @@ export function WalkingMusicCard() {
       {/* Player */}
       {expanded && (
         <div className="mt-4">
+          {provider === 'youtube' && (
+            <div className="mb-3 text-xs text-gray-500 bg-gray-50 border border-gray-100 p-2 rounded-lg">
+              ביוטיוב יש מגבלות ניגון ברקע בדפדפן במובייל. אם מעבירים אפליקציה או מכבים מסך,
+              ההשמעה עלולה להיעצר אלא אם יש YouTube Premium או משתמשים באפליקציית YouTube.
+              {youtubeExternalUrl ? (
+                <>
+                  {' '}
+                  אפשר גם לפתוח את הנגן ביוטיוב עצמו{' '}
+                  <a
+                    href={youtubeExternalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-emerald-600 hover:text-emerald-700"
+                  >
+                    כאן
+                  </a>
+                  .
+                </>
+              ) : null}
+            </div>
+          )}
           <iframe
             title="Walking music"
             src={embedUrl}
