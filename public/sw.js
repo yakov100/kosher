@@ -37,13 +37,20 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+
+  // Never intercept Next.js internal assets or HMR endpoints.
+  // These change frequently in dev and are already cache-busted in prod.
+  if (url.origin === self.location.origin && url.pathname.startsWith('/_next/')) {
+    return;
+  }
+
   // Never cache navigations (HTML). This prevents stale HTML referencing old chunks after deploy.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(async () => {
         // Offline fallback (best-effort)
-        const cachedRoot = await caches.match('/');
-        return cachedRoot || new Response('Offline', { status: 503 });
+        return new Response('Offline', { status: 503 });
       })
     );
     return;
@@ -54,6 +61,9 @@ self.addEventListener('fetch', (event) => {
       event.request.url.includes('supabase.co')) {
     return;
   }
+
+  // Only consider caching same-origin requests.
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -82,10 +92,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        // Return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
         return new Response('Offline', { status: 503 });
       });
     })

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WalkingChart } from '@/components/steps/StepsChart'
+import { WalkingMusicCard } from '@/components/steps/WalkingMusicCard'
 import { calculateStreak, getLast7Days, getLast30Days, getToday } from '@/lib/utils'
 
 type ViewMode = 'week' | 'month'
@@ -98,6 +99,9 @@ export default function WalkingPage() {
       <Card>
         <WalkingChart data={chartData} goal={dailyGoal} />
       </Card>
+
+      {/* Music */}
+      <WalkingMusicCard />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-3">

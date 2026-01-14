@@ -19,6 +19,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isProd = process.env.NODE_ENV === "production";
+
   return (
     <html lang="he" dir="rtl">
       <head>
@@ -32,13 +34,33 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
+              (function () {
+                if (!('serviceWorker' in navigator)) return;
+
+                var isProd = ${JSON.stringify(isProd)};
+
+                // In development, a service worker will frequently cache stale Next.js chunks
+                // and cause ChunkLoadError / 503 "Offline" responses. Ensure it's disabled.
+                if (!isProd) {
+                  navigator.serviceWorker.getRegistrations()
+                    .then(function (regs) { return Promise.all(regs.map(function (r) { return r.unregister(); })); })
+                    .catch(function () {});
+
+                  if (typeof caches !== 'undefined') {
+                    caches.keys()
+                      .then(function (keys) { return Promise.all(keys.map(function (k) { return caches.delete(k); })); })
+                      .catch(function () {});
+                  }
+
+                  return;
+                }
+
+                window.addEventListener('load', function () {
                   navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered'))
-                    .catch(err => console.log('SW registration failed:', err));
+                    .then(function () { console.log('SW registered'); })
+                    .catch(function (err) { console.log('SW registration failed:', err); });
                 });
-              }
+              })();
             `,
           }}
         />
