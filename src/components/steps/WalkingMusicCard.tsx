@@ -130,6 +130,29 @@ function normalizeYouTubeToEmbedUrl(input: string): string | null {
   return null
 }
 
+function extractYouTubeVideoIdFromEmbedUrl(embedUrl: string): string | null {
+  let url: URL
+  try {
+    url = new URL(embedUrl)
+  } catch {
+    return null
+  }
+  if (url.hostname !== 'www.youtube.com' && url.hostname !== 'youtube.com') return null
+  const segments = url.pathname.split('/').filter(Boolean)
+  // /embed/{videoId}
+  if (segments[0] === 'embed' && segments[1] && segments[1] !== 'videoseries') {
+    return segments[1]
+  }
+  return null
+}
+
+type RelatedVideo = {
+  videoId: string
+  title: string
+  channelTitle: string
+  thumbnailUrl: string
+}
+
 export function WalkingMusicCard() {
   const defaultEmbedUrl = useMemo(() => buildSpotifyEmbedUrl(PRESETS[0].type, PRESETS[0].id), [])
   const [expanded, setExpanded] = useState(false)
@@ -137,6 +160,9 @@ export function WalkingMusicCard() {
   const [provider, setProvider] = useState<Provider>('spotify')
   const [customUrl, setCustomUrl] = useState('')
   const [status, setStatus] = useState<'idle' | 'saved' | 'invalid'>('idle')
+  const [related, setRelated] = useState<RelatedVideo[]>([])
+  const [relatedLoading, setRelatedLoading] = useState(false)
+  const [relatedError, setRelatedError] = useState<string | null>(null)
 
   // Load persisted preferences
   useEffect(() => {
@@ -190,6 +216,47 @@ export function WalkingMusicCard() {
     setStatus('saved')
     window.setTimeout(() => setStatus('idle'), 1500)
   }
+
+  const youtubeVideoId = useMemo(() => {
+    if (provider !== 'youtube') return null
+    return extractYouTubeVideoIdFromEmbedUrl(embedUrl)
+  }, [provider, embedUrl])
+
+  // Fetch "related videos" like YouTube side panel (requires YOUTUBE_API_KEY on server).
+  useEffect(() => {
+    if (!expanded || provider !== 'youtube' || !youtubeVideoId) {
+      setRelated([])
+      setRelatedError(null)
+      setRelatedLoading(false)
+      return
+    }
+
+    let cancelled = false
+    const run = async () => {
+      setRelatedLoading(true)
+      setRelatedError(null)
+      try {
+        const res = await fetch(`/api/youtube/related?videoId=${encodeURIComponent(youtubeVideoId)}&maxResults=12`)
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          throw new Error(data?.error || `HTTP ${res.status}`)
+        }
+        if (!cancelled) setRelated(Array.isArray(data?.videos) ? data.videos : [])
+      } catch (e) {
+        if (!cancelled) {
+          setRelated([])
+          setRelatedError(e instanceof Error ? e.message : 'שגיאה בטעינת המלצות')
+        }
+      } finally {
+        if (!cancelled) setRelatedLoading(false)
+      }
+    }
+    run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [expanded, provider, youtubeVideoId])
 
   return (
     <Card>
@@ -328,6 +395,55 @@ export function WalkingMusicCard() {
             loading="lazy"
             className="rounded-xl"
           />
+        </div>
+      )}
+
+      {/* YouTube recommendations (like the side panel) */}
+      {expanded && provider === 'youtube' && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-semibold text-gray-700">מומלצים</div>
+            {relatedLoading && <div className="text-xs text-gray-400">טוען…</div>}
+          </div>
+
+          {!youtubeVideoId && (
+            <div className="text-sm text-gray-500 bg-gray-50 border border-gray-100 p-3 rounded-lg">
+              כדי להציג מומלצים, הדבק קישור של סרטון (watch) ולא רק פלייליסט.
+            </div>
+          )}
+
+          {relatedError && (
+            <div className="text-sm text-amber-700 bg-amber-50 border border-amber-100 p-3 rounded-lg">
+              לא הצלחתי להביא המלצות מיוטיוב ({relatedError}). כדי שזה יעבוד צריך להגדיר בשרת `YOUTUBE_API_KEY`.
+            </div>
+          )}
+
+          {youtubeVideoId && !relatedError && related.length > 0 && (
+            <div className="space-y-2">
+              {related.map((v) => (
+                <button
+                  key={v.videoId}
+                  type="button"
+                  onClick={() => {
+                    setEmbedUrl(buildYouTubeEmbedUrlFromVideoId(v.videoId))
+                    setExpanded(true)
+                  }}
+                  className="w-full flex gap-3 p-2 rounded-xl bg-gray-100/60 hover:bg-gray-100 transition-all text-left"
+                >
+                  <img
+                    src={v.thumbnailUrl}
+                    alt=""
+                    className="w-28 h-16 rounded-lg object-cover shrink-0 bg-gray-200"
+                    loading="lazy"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-gray-700 line-clamp-2">{v.title}</div>
+                    <div className="text-xs text-gray-500 mt-1 line-clamp-1">{v.channelTitle}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </Card>

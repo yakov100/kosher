@@ -7,10 +7,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 export async function createClient() {
   const cookieStore = await cookies()
+  const supabaseUrl =
+    (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim() || SUPABASE_URL
+  const supabaseAnonKey =
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '').trim() || SUPABASE_ANON_KEY
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
