@@ -230,7 +230,7 @@ export default function StatsPage() {
           {/* Bento Grid - Main Stats */}
           <div className="grid grid-cols-2 gap-3">
             {/* Walking Card - Large */}
-            <div className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-[var(--card)] to-teal-500/10 border border-emerald-500/20 backdrop-blur-xl">
+            <div className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-[var(--card)] to-teal-500/10 border border-emerald-500/20 ">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-emerald-500/20">
@@ -274,7 +274,7 @@ export default function StatsPage() {
             </div>
 
             {/* Weight Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 via-[var(--card)] to-cyan-500/10 border border-blue-500/20 backdrop-blur-xl">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 via-[var(--card)] to-cyan-500/10 border border-blue-500/20 ">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-blue-500/20">
                   <Scale className="w-4 h-4 text-blue-400" />
@@ -293,7 +293,7 @@ export default function StatsPage() {
             </div>
 
             {/* Streak Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/20 via-[var(--card)] to-amber-500/10 border border-orange-500/20 backdrop-blur-xl">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/20 via-[var(--card)] to-amber-500/10 border border-orange-500/20 ">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-orange-500/20">
                   <Flame className="w-4 h-4 text-orange-400" />
@@ -310,7 +310,7 @@ export default function StatsPage() {
             </div>
 
             {/* Level Progress Card */}
-            <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/20 via-[var(--card)] to-purple-500/10 border border-violet-500/20 backdrop-blur-xl">
+            <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/20 via-[var(--card)] to-purple-500/10 border border-violet-500/20 ">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -340,7 +340,7 @@ export default function StatsPage() {
             </div>
 
             {/* Goal Days Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-[var(--card)] to-sky-500/10 border border-cyan-500/20 backdrop-blur-xl">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-[var(--card)] to-sky-500/10 border border-cyan-500/20 ">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-cyan-500/20">
                   <Target className="w-4 h-4 text-cyan-400" />
@@ -354,7 +354,7 @@ export default function StatsPage() {
             </div>
 
             {/* Monthly Total Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-500/20 via-[var(--card)] to-rose-500/10 border border-pink-500/20 backdrop-blur-xl">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-500/20 via-[var(--card)] to-rose-500/10 border border-pink-500/20 ">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-pink-500/20">
                   <Calendar className="w-4 h-4 text-pink-400" />
@@ -369,7 +369,7 @@ export default function StatsPage() {
 
             {/* Achievements Preview */}
             {userAchievements.length > 0 && (
-              <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-[var(--card)] to-yellow-500/10 border border-amber-500/20 backdrop-blur-xl">
+              <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-[var(--card)] to-yellow-500/10 border border-amber-500/20 ">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-amber-500/20">
@@ -397,7 +397,7 @@ export default function StatsPage() {
 
             {/* Daily Tip - Compact */}
             {settings?.show_daily_tip && tip && (
-              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] backdrop-blur-xl">
+              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] ">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-lg bg-[var(--primary)]/20 shrink-0">
                     <Lightbulb className="w-4 h-4 text-[var(--primary)]" />
@@ -412,7 +412,7 @@ export default function StatsPage() {
 
             {/* Daily Challenge - Compact */}
             {settings?.show_daily_challenge && challenge && (
-              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] backdrop-blur-xl">
+              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] ">
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-[var(--accent)]/20 shrink-0">
@@ -446,7 +446,7 @@ export default function StatsPage() {
       {activeTab === 'charts' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Walking Chart */}
-          <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] backdrop-blur-xl">
+          <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] ">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-emerald-500/20">
                 <Footprints className="w-5 h-5 text-emerald-400" />
@@ -461,7 +461,7 @@ export default function StatsPage() {
 
           {/* Weight Chart */}
           {weightChartData.length > 0 && (
-            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] backdrop-blur-xl">
+            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] ">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-xl bg-blue-500/20">
                   <Scale className="w-5 h-5 text-blue-400" />
