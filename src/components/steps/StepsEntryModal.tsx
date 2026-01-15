@@ -106,10 +106,10 @@ export function WalkingEntryModal({
               key={num}
               type="button"
               onClick={() => setMinutes(num.toString())}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                 minutes === num.toString()
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
+                  : 'bg-white/10 text-white/70 border border-white/10 hover:bg-white/20 hover:border-white/20 hover:text-white'
               }`}
             >
               {num} דק׳
@@ -126,11 +126,11 @@ export function WalkingEntryModal({
         />
 
         {error && (
-          <p className="text-sm text-rose-600 bg-rose-100 p-3 rounded-lg">{error}</p>
+          <p className="text-sm text-rose-300 bg-rose-500/20 border border-rose-500/30 p-4 rounded-xl backdrop-blur-sm">{error}</p>
         )}
 
         {existingRecord && (
-          <p className="text-sm text-amber-700 bg-amber-100 p-3 rounded-lg">
+          <p className="text-sm text-amber-300 bg-amber-500/20 border border-amber-500/30 p-4 rounded-xl backdrop-blur-sm">
             📝 קיימת רשומה ל-{formatDate(existingRecord.date)} - השמירה תעדכן אותה
           </p>
         )}

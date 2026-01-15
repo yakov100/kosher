@@ -128,7 +128,7 @@ export function WeightEntryModal({
         />
 
         {error && (
-          <p className="text-sm text-rose-600 bg-rose-100 p-3 rounded-lg">{error}</p>
+          <p className="text-sm text-rose-300 bg-rose-500/20 border border-rose-500/30 p-4 rounded-xl backdrop-blur-sm">{error}</p>
         )}
 
         <div className="flex gap-3 pt-2">

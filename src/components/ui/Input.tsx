@@ -12,26 +12,33 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className, ...props }, ref) => {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {label && (
-          <label className="block text-sm font-semibold text-[var(--foreground)]">
+          <label className="block text-sm font-bold text-white/90">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={cn(
-            'w-full px-4 py-3 rounded-xl bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all',
-            error && 'border-red-400 focus:border-red-400 focus:ring-red-400/30',
+            'w-full px-5 py-3.5 rounded-xl',
+            'bg-white/5 backdrop-blur-sm',
+            'border border-white/10',
+            'text-white placeholder:text-white/30',
+            'focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50',
+            'hover:bg-white/10 hover:border-white/20',
+            'transition-all duration-300',
+            'text-base font-medium',
+            error && 'border-red-400/50 focus:border-red-400 focus:ring-red-400/30',
             className
           )}
           {...props}
         />
         {hint && !error && (
-          <p className="text-xs font-medium text-[var(--muted-foreground)]">{hint}</p>
+          <p className="text-xs font-medium text-white/40">{hint}</p>
         )}
         {error && (
-          <p className="text-xs font-bold text-red-500">{error}</p>
+          <p className="text-xs font-bold text-red-400">{error}</p>
         )}
       </div>
     )
