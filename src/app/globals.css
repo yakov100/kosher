@@ -5,20 +5,20 @@ html {
 }
 
 :root {
-  /* Pastel Minimalist Playful Palette - Slightly Darker */
-  --background: #f5f5f5; /* slightly darker off-white */
-  --foreground: #1a1a1a; /* soft black, readable but not harsh */
-  --card: #ffffff; /* pure white */
-  --card-hover: #f0f0f0; /* slightly darker gray */
-  --border: #d1d5db; /* slightly darker gray border */
-  --primary: #7dd3a0; /* slightly darker mint green - Walking/Success */
-  --primary-hover: #6bc18a; /* darker mint */
-  --secondary: #93c5f0; /* slightly darker sky blue - Weight/General */
-  --secondary-hover: #7ab3e0; /* darker sky */
-  --accent: #ffc49e; /* slightly darker peach - Gamification/Streak */
-  --accent-hover: #ffb380; /* darker peach */
-  --muted: #e5e7eb; /* slightly darker gray */
-  --muted-foreground: #6b7280; /* soft gray, not too dark */
+  /* Pastel Minimalist Playful Palette - Darker Background */
+  --background: #d4d4d4; /* even darker gray background */
+  --foreground: #111827; /* almost black */
+  --card: #ffffff; /* pure white remains for contrast */
+  --card-hover: #f3f4f6; /* light gray hover */
+  --border: #d1d5db; /* gray border */
+  --primary: #4ade80; /* more vibrant green */
+  --primary-hover: #22c55e; /* darker green */
+  --secondary: #60a5fa; /* more vibrant blue */
+  --secondary-hover: #3b82f6; /* darker blue */
+  --accent: #fb923c; /* more vibrant orange */
+  --accent-hover: #f97316; /* darker orange */
+  --muted: #e5e7eb; /* gray */
+  --muted-foreground: #4b5563; /* darker gray text */
   
   --radius-base: 20px; /* larger, friendlier radius */
   --radius-sm: 12px; /* softer small radius */

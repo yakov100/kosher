@@ -25,10 +25,10 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          fill="none"
+          fill="var(--card)"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-gray-200"
+          className="text-gray-300 drop-shadow-sm"
         />
         {/* Progress circle */}
         <circle
