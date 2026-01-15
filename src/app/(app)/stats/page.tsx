@@ -196,13 +196,13 @@ export default function StatsPage() {
   return (
     <div className="pb-24 min-h-screen">
       {/* Header */}
-      <header className="py-4 flex items-center gap-3 sticky top-0 bg-[var(--background)]/80 backdrop-blur-xl z-50">
+      <header className="py-4 flex items-center gap-3 sticky top-0 bg-[var(--background)] z-50">
         <BackButton />
         <h1 className="text-xl font-bold text-[var(--foreground)]">נתונים</h1>
       </header>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 p-1 bg-[var(--card)]/50 backdrop-blur-xl rounded-2xl mb-6 sticky top-16 z-40">
+      <div className="flex gap-2 p-1 bg-[var(--card)] rounded-2xl mb-6 sticky top-14 z-40">
         {tabs.map((tab) => (
           <button
             key={tab.id}
