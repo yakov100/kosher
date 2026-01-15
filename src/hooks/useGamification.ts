@@ -129,8 +129,16 @@ export function useGamification() {
           .insert({ user_id: user.id } as never)
           .select()
           .single()
+        if (!newData) {
+          throw new Error('Failed to create gamification record')
+        }
         gamData = newData
       }
+      
+      if (!gamData) {
+        throw new Error('Gamification data is missing')
+      }
+      
       return gamData as UserGamification
     })()
 

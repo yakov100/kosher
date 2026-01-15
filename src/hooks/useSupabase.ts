@@ -194,13 +194,13 @@ export function useWalking() {
     
     // Optimistic update
     const optimisticRecord = existing 
-      ? { ...existing, minutes, note, updated_at: new Date().toISOString() }
+      ? { ...existing, minutes, note: note ?? null, updated_at: new Date().toISOString() }
       : { 
           id: 'temp-' + Date.now(), 
           user_id: user.id, 
           date, 
           minutes, 
-          note: note || null, 
+          note: note ?? null, 
           created_at: new Date().toISOString(), 
           updated_at: new Date().toISOString() 
         }
