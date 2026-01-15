@@ -194,7 +194,7 @@ export default function StatsPage() {
   const levelTitle = ['מתחיל', 'מתאמן', 'פעיל', 'מתמיד', 'מתקדם', 'חרוץ', 'קבוע', 'יציב', 'מוביל', 'מומחה'][Math.min(levelInfo.level - 1, 9)] || 'אלוף'
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[var(--background)]" style={{ top: 0, paddingBottom: '80px' }}>
+    <div className="fixed inset-0 flex flex-col bg-[var(--background)]" style={{ bottom: '70px' }}>
       {/* Fixed Header */}
       <header className="py-3 px-4 flex items-center gap-3 bg-[var(--background)] shrink-0">
         <BackButton />
@@ -223,7 +223,7 @@ export default function StatsPage() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex-1 overflow-y-auto px-4">
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="space-y-4 animate-fadeIn">
