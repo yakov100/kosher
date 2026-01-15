@@ -195,14 +195,16 @@ export default function StatsPage() {
 
   return (
     <div className="pb-4">
-      {/* Header */}
-      <header className="py-3 flex items-center gap-3">
-        <BackButton />
-        <h1 className="text-xl font-bold text-[var(--foreground)]">נתונים</h1>
-      </header>
+      {/* Sticky Header + Tabs */}
+      <div className="sticky -top-6 z-50 bg-[var(--background)] pt-6 pb-4">
+        {/* Header */}
+        <header className="py-3 flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-bold text-[var(--foreground)]">נתונים</h1>
+        </header>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-2 p-1 bg-[var(--card)] rounded-2xl mb-4">
+        {/* Tab Navigation */}
+        <div className="flex gap-2 p-1 bg-[var(--card)] rounded-2xl">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -220,6 +222,7 @@ export default function StatsPage() {
             {tab.label}
           </button>
         ))}
+        </div>
       </div>
 
       {/* Content Area */}
