@@ -18,9 +18,10 @@ import { WalkingChart } from '@/components/steps/StepsChart'
 import { WeightChart } from '@/components/weight/WeightChart'
 import { TipCard } from '@/components/dashboard/TipCard'
 import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
-import { AlertCircle, Trophy, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react'
+import { AlertCircle, Trophy, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Tables } from '@/types/database'
 import { Button } from '@/components/ui/Button'
+import { BackButton } from '@/components/ui/BackButton'
 
 export default function StatsPage() {
   const router = useRouter()
@@ -186,213 +187,219 @@ export default function StatsPage() {
 
   return (
     <div className="pb-20">
-      <header className="py-6 flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="p-0 hover:bg-transparent">
-          <ArrowRight className="w-6 h-6 text-[var(--foreground)]" />
-        </Button>
+      <header className="py-6 flex items-center gap-2">
+        <BackButton />
         <h1 className="text-2xl font-bold text-[var(--foreground)]">נתונים נוספים</h1>
       </header>
 
-      {/* Weekly Summary - Walking */}
-      <MetricSection
-        title="סיכום שבועי"
-        metrics={[
-          {
-            value: walkingStats.weeklyAvg,
-            label: 'ממוצע דק׳ יומי',
-            size: 'lg',
-            trend: walkingStats.weeklyTrend !== 0 ? {
-              value: `${walkingStats.weeklyTrend > 0 ? '+' : ''}${walkingStats.weeklyTrend}%`,
-              isPositive: walkingStats.weeklyTrend > 0
-            } : undefined
-          },
-          {
-            value: `${walkingStats.goalDaysThisWeek}/7`,
-            label: 'ימי יעד',
-            size: 'lg'
-          },
-          {
-            value: formatMinutes(walkingStats.monthlyTotal),
-            label: 'סה״כ חודש',
-            size: 'lg'
-          }
-        ]}
-        layout="horizontal"
-      />
-
-      {/* Weight Details (if exists) */}
-      {weightStats && (
-        <MetricSection
-          title="משקל"
-          metrics={[
-            {
-              value: weightStats.change !== 0 ? `${weightStats.change > 0 ? '+' : ''}${weightStats.change}` : '0',
-              label: 'שינוי (ק״ג)',
-              size: 'md',
-              trend: {
-                value: weightStats.change < -0.1 ? '↓' : weightStats.change > 0.1 ? '↑' : '→',
-                isPositive: weightStats.change < -0.1
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Weekly Summary - Walking */}
+          <MetricSection
+            title="סיכום שבועי"
+            metrics={[
+              {
+                value: walkingStats.weeklyAvg,
+                label: 'ממוצע דק׳ יומי',
+                size: 'lg',
+                trend: walkingStats.weeklyTrend !== 0 ? {
+                  value: `${walkingStats.weeklyTrend > 0 ? '+' : ''}${walkingStats.weeklyTrend}%`,
+                  isPositive: walkingStats.weeklyTrend > 0
+                } : undefined
+              },
+              {
+                value: `${walkingStats.goalDaysThisWeek}/7`,
+                label: 'ימי יעד',
+                size: 'lg'
+              },
+              {
+                value: formatMinutes(walkingStats.monthlyTotal),
+                label: 'סה״כ חודש',
+                size: 'lg'
               }
-            },
-            {
-              value: weightStats.avg30,
-              label: 'ממוצע חודש (ק״ג)',
-              size: 'md'
-            },
-            {
-              value: weightStats.count,
-              label: 'סה״כ מדידות',
-              size: 'md'
-            }
-          ]}
-          layout="horizontal"
-          className="border-t border-gray-200"
-        />
-      )}
-
-      {/* Weight reminder */}
-      {daysSinceLastWeight !== null && daysSinceLastWeight >= 7 && (
-        <section className="py-8 border-t border-gray-200">
-          <div className="flex items-center justify-center gap-3 text-[var(--muted-foreground)]">
-            <AlertCircle size={20} className="text-[var(--accent)]" />
-            <span className="text-sm font-medium">
-              עברו {daysSinceLastWeight} ימים מהשקילה האחרונה
-            </span>
-          </div>
-        </section>
-      )}
-
-      {/* Gamification Section */}
-      <section className="py-12 border-t border-gray-200">
-        <div className="space-y-4">
-          <LevelProgress 
-            level={levelInfo.level}
-            currentXP={levelInfo.currentLevelXP}
-            nextLevelXP={levelInfo.nextLevelXP}
-            progress={levelInfo.progress}
-            totalXP={gamification?.total_xp || 0}
-            compact
+            ]}
+            layout="horizontal"
           />
-          
-          {/* Treat Progress */}
-          {!treatDismissed && consecutiveGoalDays >= 14 && (
-            <TreatRewardCard 
-              consecutiveGoalDays={consecutiveGoalDays}
-              targetDays={14}
-              onDismiss={() => setTreatDismissed(true)}
+
+          {/* Weight Details (if exists) */}
+          {weightStats && (
+            <MetricSection
+              title="משקל"
+              metrics={[
+                {
+                  value: weightStats.change !== 0 ? `${weightStats.change > 0 ? '+' : ''}${weightStats.change}` : '0',
+                  label: 'שינוי (ק״ג)',
+                  size: 'md',
+                  trend: {
+                    value: weightStats.change < -0.1 ? '↓' : weightStats.change > 0.1 ? '↑' : '→',
+                    isPositive: weightStats.change < -0.1
+                  }
+                },
+                {
+                  value: weightStats.avg30,
+                  label: 'ממוצע חודש (ק״ג)',
+                  size: 'md'
+                },
+                {
+                  value: weightStats.count,
+                  label: 'סה״כ מדידות',
+                  size: 'md'
+                }
+              ]}
+              layout="horizontal"
+              className="border-t border-gray-200"
             />
           )}
-          {consecutiveGoalDays > 0 && consecutiveGoalDays < 14 && (
-            <TreatProgressCard 
-              consecutiveGoalDays={consecutiveGoalDays}
-              targetDays={14}
-              todayGoalMet={todayGoalMet}
-            />
-          )}
-        </div>
-      </section>
 
-      {/* Charts Section */}
-      <section className="py-10 border-t border-gray-200">
-        <button
-          onClick={() => setChartsExpanded(!chartsExpanded)}
-          className="w-full flex items-center justify-between mb-6"
-        >
-          <h3 className="text-base font-semibold text-[var(--foreground)]">גרפים</h3>
-          {chartsExpanded ? (
-            <ChevronUp className="text-[var(--muted-foreground)]" size={18} />
-          ) : (
-            <ChevronDown className="text-[var(--muted-foreground)]" size={18} />
-          )}
-        </button>
-        {chartsExpanded && (
-          <div className="space-y-8">
-            <div>
-              <h4 className="text-sm font-medium text-[var(--muted-foreground)] mb-4">הליכה - 7 ימים אחרונים</h4>
-              <WalkingChart data={walkingChartData} goal={dailyGoal} />
-            </div>
-            {weightChartData.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-[var(--muted-foreground)] mb-4">משקל - 30 ימים אחרונים</h4>
-                <WeightChart data={weightChartData} />
+          {/* Weight reminder */}
+          {daysSinceLastWeight !== null && daysSinceLastWeight >= 7 && (
+            <section className="py-8 border-t border-gray-200">
+              <div className="flex items-center justify-center gap-3 text-[var(--muted-foreground)]">
+                <AlertCircle size={20} className="text-[var(--accent)]" />
+                <span className="text-sm font-medium">
+                  עברו {daysSinceLastWeight} ימים מהשקילה האחרונה
+                </span>
               </div>
-            )}
-          </div>
-        )}
-      </section>
+            </section>
+          )}
 
-      {/* Activity Feed */}
-      <ActivityFeed
-        walkingRecords={records}
-        weightRecords={weights}
-        onEditWalking={(record) => {
-          setEditWalkingRecord(record)
-          setShowWalkingModal(true)
-        }}
-        onEditWeight={(record) => {
-          setEditWeightRecord(record)
-          setShowWeightModal(true)
-        }}
-      />
-
-      {/* Achievements Preview */}
-      {userAchievements.length > 0 && (
-        <section className="py-10 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Trophy className="text-[var(--accent)]" size={24} />
-              <div>
-                <h3 className="font-semibold text-base text-[var(--foreground)]">{userAchievements.length} הישגים</h3>
-                <p className="text-xs text-[var(--muted-foreground)]">לחץ לצפייה בכל ההישגים</p>
-              </div>
-            </div>
-            <div className="flex -space-x-2 rtl:space-x-reverse">
-              {userAchievements.slice(0, 4).map((ach, i) => (
-                <div 
-                  key={ach.id}
-                  className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-xl"
-                  style={{ zIndex: 4 - i }}
-                >
-                  {ach.icon}
-                </div>
-              ))}
-              {userAchievements.length > 4 && (
-                <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center text-xs font-black">
-                  +{userAchievements.length - 4}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Daily Brief */}
-      {(settings?.show_daily_tip || settings?.show_daily_challenge) && (
-        <section className="py-10 border-t border-gray-200">
-          <button
-            onClick={() => setDailyBriefExpanded(!dailyBriefExpanded)}
-            className="w-full flex items-center justify-between mb-6"
-          >
-            <h3 className="text-base font-semibold text-[var(--foreground)]">סיכום יומי</h3>
-            {dailyBriefExpanded ? (
-              <ChevronUp className="text-[var(--muted-foreground)]" size={18} />
-            ) : (
-              <ChevronDown className="text-[var(--muted-foreground)]" size={18} />
-            )}
-          </button>
-          {dailyBriefExpanded && (
+          {/* Gamification Section */}
+          <section className="py-12 border-t border-gray-200">
             <div className="space-y-4">
-              {settings?.show_daily_tip && <TipCard tip={tip} />}
-              {settings?.show_daily_challenge && (
-                <ChallengeCard
-                  challenge={challenge}
-                  onComplete={handleChallengeComplete}
+              <LevelProgress 
+                level={levelInfo.level}
+                currentXP={levelInfo.currentLevelXP}
+                nextLevelXP={levelInfo.nextLevelXP}
+                progress={levelInfo.progress}
+                totalXP={gamification?.total_xp || 0}
+                compact
+              />
+              
+              {/* Treat Progress */}
+              {!treatDismissed && consecutiveGoalDays >= 14 && (
+                <TreatRewardCard 
+                  consecutiveGoalDays={consecutiveGoalDays}
+                  targetDays={14}
+                  onDismiss={() => setTreatDismissed(true)}
+                />
+              )}
+              {consecutiveGoalDays > 0 && consecutiveGoalDays < 14 && (
+                <TreatProgressCard 
+                  consecutiveGoalDays={consecutiveGoalDays}
+                  targetDays={14}
+                  todayGoalMet={todayGoalMet}
                 />
               )}
             </div>
+          </section>
+
+          {/* Charts Section */}
+          <section className="py-10 border-t border-gray-200">
+            <button
+              onClick={() => setChartsExpanded(!chartsExpanded)}
+              className="w-full flex items-center justify-between mb-6"
+            >
+              <h3 className="text-base font-semibold text-[var(--foreground)]">גרפים</h3>
+              {chartsExpanded ? (
+                <ChevronUp className="text-[var(--muted-foreground)]" size={18} />
+              ) : (
+                <ChevronDown className="text-[var(--muted-foreground)]" size={18} />
+              )}
+            </button>
+            {chartsExpanded && (
+              <div className="space-y-8">
+                <div>
+                  <h4 className="text-sm font-medium text-[var(--muted-foreground)] mb-4">הליכה - 7 ימים אחרונים</h4>
+                  <WalkingChart data={walkingChartData} goal={dailyGoal} />
+                </div>
+                {weightChartData.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-[var(--muted-foreground)] mb-4">משקל - 30 ימים אחרונים</h4>
+                    <WeightChart data={weightChartData} />
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-8">
+          {/* Daily Brief */}
+          {(settings?.show_daily_tip || settings?.show_daily_challenge) && (
+            <section className="py-10 border-t border-gray-200 lg:border-t-0 lg:pt-0">
+              <button
+                onClick={() => setDailyBriefExpanded(!dailyBriefExpanded)}
+                className="w-full flex items-center justify-between mb-6"
+              >
+                <h3 className="text-base font-semibold text-[var(--foreground)]">סיכום יומי</h3>
+                {dailyBriefExpanded ? (
+                  <ChevronUp className="text-[var(--muted-foreground)]" size={18} />
+                ) : (
+                  <ChevronDown className="text-[var(--muted-foreground)]" size={18} />
+                )}
+              </button>
+              {dailyBriefExpanded && (
+                <div className="space-y-4">
+                  {settings?.show_daily_tip && <TipCard tip={tip} />}
+                  {settings?.show_daily_challenge && (
+                    <ChallengeCard
+                      challenge={challenge}
+                      onComplete={handleChallengeComplete}
+                    />
+                  )}
+                </div>
+              )}
+            </section>
           )}
-        </section>
-      )}
+
+          {/* Achievements Preview */}
+          {userAchievements.length > 0 && (
+            <section className="py-10 border-t border-gray-200 lg:border-t-0 lg:pt-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Trophy className="text-[var(--accent)]" size={24} />
+                  <div>
+                    <h3 className="font-semibold text-base text-[var(--foreground)]">{userAchievements.length} הישגים</h3>
+                    <p className="text-xs text-[var(--muted-foreground)]">לחץ לצפייה בכל ההישגים</p>
+                  </div>
+                </div>
+                <div className="flex -space-x-2 rtl:space-x-reverse">
+                  {userAchievements.slice(0, 4).map((ach, i) => (
+                    <div 
+                      key={ach.id}
+                      className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-xl"
+                      style={{ zIndex: 4 - i }}
+                    >
+                      {ach.icon}
+                    </div>
+                  ))}
+                  {userAchievements.length > 4 && (
+                    <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center text-xs font-black">
+                      +{userAchievements.length - 4}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Activity Feed */}
+          <ActivityFeed
+            walkingRecords={records}
+            weightRecords={weights}
+            onEditWalking={(record) => {
+              setEditWalkingRecord(record)
+              setShowWalkingModal(true)
+            }}
+            onEditWeight={(record) => {
+              setEditWeightRecord(record)
+              setShowWeightModal(true)
+            }}
+          />
+        </div>
+      </div>
 
       {/* Modals */}
       <WalkingEntryModal

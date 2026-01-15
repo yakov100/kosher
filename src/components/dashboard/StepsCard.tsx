@@ -60,24 +60,24 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
           <div className="flex-1">
             {hasData ? (
               <>
-                <div className={`text-5xl font-black mb-2 ${isGoalReached ? 'text-[var(--primary)]' : 'text-black'}`}>
+                <div className={`text-5xl font-black mb-2 ${isGoalReached ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
                   {formatMinutes(minutes)}
                 </div>
-                <div className="text-sm font-bold text-gray-600">
+                <div className="text-sm font-bold text-[var(--muted-foreground)]">
                   מתוך {dailyGoal} דקות
                 </div>
                 {isGoalReached && (
-                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--primary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--primary)] border-2 border-[var(--primary)]/50 shadow-lg">
                     <span className="text-xl animate-bounce">🎉</span>
-                    <span className="font-black text-black uppercase tracking-wide">
+                    <span className="font-black text-white uppercase tracking-wide">
                       יעד הושג!
                     </span>
-                    <Star className="w-5 h-5 text-black animate-pulse" />
+                    <Star className="w-5 h-5 text-white animate-pulse" />
                   </div>
                 )}
               </>
             ) : (
-              <div className="text-gray-600">
+              <div className="text-[var(--muted-foreground)]">
                 <div className="text-xl font-bold mb-2">לא הוזנה הליכה עדיין</div>
                 <div className="text-sm font-medium">לחץ להזנת דקות הליכה ולצבור XP! ⭐</div>
               </div>
@@ -87,7 +87,7 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
           <div className="relative">
             <ProgressRing progress={progress} size={100} strokeWidth={8}>
               <div className="text-center">
-                <div className={`text-2xl font-black ${isGoalReached ? 'text-[var(--primary)]' : 'text-black'}`}>
+                <div className={`text-2xl font-black ${isGoalReached ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>
                   {progress}%
                 </div>
               </div>
@@ -95,7 +95,7 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
             
             {/* Achievement badge for goal reached */}
             {isGoalReached && (
-              <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-[var(--primary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-lg font-black animate-pulse text-black">
+              <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-[var(--primary)] border-2 border-[var(--primary)]/50 shadow-lg flex items-center justify-center text-lg font-black animate-pulse text-white">
                 ✓
               </div>
             )}

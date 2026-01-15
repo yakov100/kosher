@@ -43,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       {/* Modal */}
       <div
         className={cn(
-          'relative w-full bg-white rounded-[var(--radius-base)] shadow-xl border border-gray-100 p-8 fade-in',
+          'relative w-full bg-[var(--card)] rounded-[var(--radius-base)] shadow-xl border border-[var(--border)] p-8 fade-in',
           sizes[size]
         )}
       >

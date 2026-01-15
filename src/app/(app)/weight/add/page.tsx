@@ -6,8 +6,9 @@ import { useWeight } from '@/hooks/useSupabase'
 import Card from '@/components/Card'
 import Button from '@/components/Button'
 import Input from '@/components/Input'
-import { ArrowRight, Scale, Calendar, Clock, MessageSquare, Trash2, Loader2 } from 'lucide-react'
+import { Scale, Calendar, Clock, MessageSquare, Trash2, Loader2 } from 'lucide-react'
 import { format, parseISO, isAfter } from 'date-fns'
+import { BackButton } from '@/components/ui/BackButton'
 
 function AddWeightContent() {
   const router = useRouter()
@@ -101,12 +102,7 @@ function AddWeightContent() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3 fade-in">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors"
-        >
-          <ArrowRight className="w-5 h-5 text-slate-400" />
-        </button>
+        <BackButton />
         <div>
           <h1 className="text-xl font-bold text-white">
             {editRecord ? 'עריכת משקל' : 'הזנת משקל'}

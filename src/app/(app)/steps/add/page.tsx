@@ -7,8 +7,9 @@ import { getToday, formatHebrewDate } from '@/lib/utils'
 import Card from '@/components/Card'
 import Button from '@/components/Button'
 import Input from '@/components/Input'
-import { ArrowRight, Timer, Calendar, MessageSquare, Trash2, Loader2 } from 'lucide-react'
+import { Timer, Calendar, MessageSquare, Trash2, Loader2 } from 'lucide-react'
 import { parseISO, isAfter, startOfDay } from 'date-fns'
+import { BackButton } from '@/components/ui/BackButton'
 
 function AddWalkingContent() {
   const router = useRouter()
@@ -93,12 +94,7 @@ function AddWalkingContent() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3 fade-in">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors"
-        >
-          <ArrowRight className="w-5 h-5 text-slate-400" />
-        </button>
+        <BackButton />
         <div>
           <h1 className="text-xl font-bold text-white">
             {isEditing ? 'עריכת הליכה' : 'הזנת הליכה'}

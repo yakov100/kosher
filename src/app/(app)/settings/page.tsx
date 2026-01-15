@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Save, Target, Calendar, Bell, Lightbulb, LogOut, Timer, ArrowRight } from 'lucide-react'
+import { Save, Target, Calendar, Bell, Lightbulb, LogOut, Timer } from 'lucide-react'
 import { useSettings, useUser } from '@/hooks/useSupabase'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { BackButton } from '@/components/ui/BackButton'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -72,117 +73,111 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
       {/* Header */}
-      <header>
+      <header className="lg:col-span-2">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-bold text-[var(--foreground)]">הגדרות</h1>
-          <Link href="/">
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ArrowRight size={18} />}
-            >
-              חזרה
-            </Button>
-          </Link>
+          <BackButton />
         </div>
         <p className="text-[var(--muted-foreground)] text-sm">{user?.email}</p>
       </header>
 
       {/* Goals */}
-      <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600">
-            <Target size={20} />
-          </div>
-          <h2 className="font-semibold text-lg text-gray-700">יעדים</h2>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
-              <Timer className="w-4 h-4" />
-              יעד דקות הליכה יומי
-            </label>
-            <Input
-              type="number"
-              value={dailyGoal}
-              onChange={(e) => setDailyGoal(e.target.value)}
-              min={5}
-              max={180}
-            />
-            <p className="text-xs text-gray-400 mt-1">מומלץ: 20-45 דקות</p>
+      <div className="lg:row-span-2">
+        <Card className="h-full">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)]">
+              <Target size={20} />
+            </div>
+            <h2 className="font-semibold text-lg text-[var(--foreground)]">יעדים</h2>
           </div>
 
-          {/* Quick select buttons for walking goal */}
-          <div className="flex flex-wrap gap-2">
-            {[15, 20, 30, 45, 60, 90].map(num => (
-              <button
-                key={num}
-                type="button"
-                onClick={() => setDailyGoal(num.toString())}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                  dailyGoal === num.toString()
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                {num} דק׳
-              </button>
-            ))}
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--muted-foreground)] mb-2">
+                <Timer className="w-4 h-4" />
+                יעד דקות הליכה יומי
+              </label>
+              <Input
+                type="number"
+                value={dailyGoal}
+                onChange={(e) => setDailyGoal(e.target.value)}
+                min={5}
+                max={180}
+              />
+              <p className="text-xs text-[var(--muted-foreground)] mt-1">מומלץ: 20-45 דקות</p>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              יעד ימי יעד בשבוע
-            </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5, 6, 7].map(num => (
+            {/* Quick select buttons for walking goal */}
+            <div className="flex flex-wrap gap-2">
+              {[15, 20, 30, 45, 60, 90].map(num => (
                 <button
                   key={num}
-                  onClick={() => setWeeklyGoalDays(num.toString())}
-                  className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
-                    weeklyGoalDays === num.toString()
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-100/80 text-gray-500 hover:bg-gray-200/80'
+                  type="button"
+                  onClick={() => setDailyGoal(num.toString())}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                    dailyGoal === num.toString()
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--card-hover)]'
                   }`}
                 >
-                  {num}
+                  {num} דק׳
                 </button>
               ))}
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-2">
+                יעד ימי יעד בשבוע
+              </label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                  <button
+                    key={num}
+                    onClick={() => setWeeklyGoalDays(num.toString())}
+                    className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
+                      weeklyGoalDays === num.toString()
+                        ? 'bg-[var(--primary)] text-white'
+                        : 'bg-[var(--muted)]/80 text-[var(--muted-foreground)] hover:bg-[var(--card-hover)]/80'
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Tips & Challenges */}
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-amber-100 text-amber-600">
+          <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
             <Lightbulb size={20} />
           </div>
-          <h2 className="font-semibold text-lg text-gray-700">טיפים ואתגרים</h2>
+          <h2 className="font-semibold text-lg text-[var(--foreground)]">טיפים ואתגרים</h2>
         </div>
 
         <div className="space-y-4">
-          <label className="flex items-center justify-between p-3 rounded-xl bg-gray-100/60 cursor-pointer">
-            <span className="text-gray-600">הצג טיפ יומי</span>
+          <label className="flex items-center justify-between p-3 rounded-xl bg-[var(--muted)]/60 cursor-pointer">
+            <span className="text-[var(--muted-foreground)]">הצג טיפ יומי</span>
             <input
               type="checkbox"
               checked={showTip}
               onChange={(e) => setShowTip(e.target.checked)}
-              className="w-5 h-5 rounded bg-white border-gray-300 text-emerald-500 focus:ring-emerald-400 focus:ring-offset-0"
+              className="w-5 h-5 rounded bg-[var(--card)] border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
             />
           </label>
 
-          <label className="flex items-center justify-between p-3 rounded-xl bg-gray-100/60 cursor-pointer">
-            <span className="text-gray-600">הצג אתגר יומי</span>
+          <label className="flex items-center justify-between p-3 rounded-xl bg-[var(--muted)]/60 cursor-pointer">
+            <span className="text-[var(--muted-foreground)]">הצג אתגר יומי</span>
             <input
               type="checkbox"
               checked={showChallenge}
               onChange={(e) => setShowChallenge(e.target.checked)}
-              className="w-5 h-5 rounded bg-white border-gray-300 text-emerald-500 focus:ring-emerald-400 focus:ring-offset-0"
+              className="w-5 h-5 rounded bg-[var(--card)] border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
             />
           </label>
         </div>
@@ -191,10 +186,10 @@ export default function SettingsPage() {
       {/* Reminders */}
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-violet-100 text-violet-600">
+          <div className="p-2 rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]">
             <Bell size={20} />
           </div>
-          <h2 className="font-semibold text-lg text-gray-700">תזכורות</h2>
+          <h2 className="font-semibold text-lg text-[var(--foreground)]">תזכורות</h2>
         </div>
 
         <div className="space-y-4">
@@ -217,34 +212,38 @@ export default function SettingsPage() {
       </Card>
 
       {/* Save Button */}
-      <Button
-        variant="primary"
-        fullWidth
-        size="lg"
-        icon={<Save size={20} />}
-        onClick={handleSave}
-        loading={saving}
-      >
-        {saved ? 'נשמר! ✓' : 'שמור הגדרות'}
-      </Button>
+      <div className="lg:col-span-2">
+        <Button
+          variant="primary"
+          fullWidth
+          size="lg"
+          icon={<Save size={20} />}
+          onClick={handleSave}
+          loading={saving}
+        >
+          {saved ? 'נשמר! ✓' : 'שמור הגדרות'}
+        </Button>
+      </div>
 
       {/* Logout */}
-      <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-rose-100 text-rose-600">
-            <LogOut size={20} />
+      <div className="lg:col-span-2">
+        <Card>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-rose-500/15 text-rose-500">
+              <LogOut size={20} />
+            </div>
+            <h2 className="font-semibold text-lg text-[var(--foreground)]">חשבון</h2>
           </div>
-          <h2 className="font-semibold text-lg text-gray-700">חשבון</h2>
-        </div>
 
-        <Button
-          variant="danger"
-          fullWidth
-          onClick={handleLogout}
-        >
-          התנתק
-        </Button>
-      </Card>
+          <Button
+            variant="danger"
+            fullWidth
+            onClick={handleLogout}
+          >
+            התנתק
+          </Button>
+        </Card>
+      </div>
     </div>
   )
 }

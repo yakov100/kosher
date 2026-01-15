@@ -69,7 +69,7 @@ export function ActivityFeed({
 
   if (activities.length === 0) {
     return (
-      <section className="py-10 border-t border-gray-200">
+      <section className="py-10 border-t border-[var(--border)]">
         <h3 className="font-semibold text-base text-[var(--foreground)] mb-6">פעילות אחרונה</h3>
         <div className="text-center py-12 text-[var(--muted-foreground)] text-sm">
           אין פעילות עדיין. התחל להזין נתונים!
@@ -79,7 +79,7 @@ export function ActivityFeed({
   }
 
   return (
-    <section className="py-10 border-t border-gray-200">
+    <section className="py-10 border-t border-[var(--border)]">
       <h3 className="font-semibold text-base text-[var(--foreground)] mb-6">פעילות אחרונה</h3>
       <div className="space-y-3">
         {activities.map(activity => {
@@ -91,7 +91,7 @@ export function ActivityFeed({
           return (
             <div
               key={activity.id}
-              className="flex items-center justify-between p-4 rounded-xl bg-white border-r-4 shadow-sm hover:shadow-md transition-all duration-300"
+              className="flex items-center justify-between p-4 rounded-xl bg-[var(--card)] border-r-4 shadow-sm hover:shadow-md transition-all duration-300"
               style={{
                 borderRightColor: isWalking ? 'var(--primary)' : 'var(--secondary)'
               }}
@@ -128,7 +128,7 @@ export function ActivityFeed({
                       onEditWeight(activity.record as Tables<'weight_records'>)
                     }
                   }}
-                  className="p-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-gray-50 transition-colors"
+                  className="p-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card-hover)] transition-colors"
                   title="עריכה"
                 >
                   <Edit size={16} />

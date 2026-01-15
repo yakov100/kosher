@@ -75,7 +75,7 @@ export function TreatProgressCard({ consecutiveGoalDays, targetDays = 14, todayG
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[var(--accent)]/30 bg-white shadow-sm p-5">
+    <div className="relative overflow-hidden rounded-xl border border-[var(--accent)]/30 bg-[var(--card)] shadow-sm p-5">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-[var(--accent)]/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
       <Gift className="absolute bottom-2 left-2 w-12 h-12 text-[var(--accent)]/15" />
@@ -100,12 +100,12 @@ export function TreatProgressCard({ consecutiveGoalDays, targetDays = 14, todayG
           <span>{consecutiveGoalDays} מתוך {targetDays} ימים</span>
           <span className="text-[var(--accent)] font-medium">{Math.round(progress)}%</span>
         </div>
-        <div className="h-3 bg-gray-100 rounded-full overflow-hidden relative">
+        <div className="h-3 bg-[var(--muted)] rounded-full overflow-hidden relative">
           {/* Milestone markers on the bar */}
           {milestones.map((milestone) => (
             <div
               key={milestone.day}
-              className="absolute top-0 bottom-0 w-0.5 bg-gray-200"
+              className="absolute top-0 bottom-0 w-0.5 bg-[var(--border)]"
               style={{ left: `${(milestone.day / targetDays) * 100}%` }}
             />
           ))}
@@ -136,7 +136,7 @@ export function TreatProgressCard({ consecutiveGoalDays, targetDays = 14, todayG
               className={`w-8 h-8 rounded-full flex items-center justify-center text-lg mb-1 transition-all duration-300 ${
                 milestone.achieved
                   ? 'bg-gradient-to-br from-[var(--accent)]/30 to-[var(--primary)]/30 border-2 border-[var(--accent)]/50 shadow-sm'
-                  : 'bg-gray-50 border border-gray-200'
+                  : 'bg-[var(--muted)] border border-[var(--border)]'
               }`}
             >
               {milestone.achieved ? milestone.icon : '○'}
@@ -149,7 +149,7 @@ export function TreatProgressCard({ consecutiveGoalDays, targetDays = 14, todayG
       </div>
 
       {/* Motivational message */}
-      <div className="relative z-10 text-center py-2 px-3 rounded-xl bg-gray-50 border border-gray-200">
+      <div className="relative z-10 text-center py-2 px-3 rounded-xl bg-[var(--muted)] border border-[var(--border)]">
         <p className="text-sm text-[var(--foreground)]">
           {message}
         </p>

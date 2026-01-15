@@ -28,20 +28,23 @@ export function MotivationalBanner({ message, streak }: MotivationalBannerProps)
     if (streak >= 3) {
       return 'bg-[var(--primary)] border-[var(--primary)]'
     }
-    return 'bg-white border-black'
+    return 'bg-[var(--card)] border-[var(--border)]'
   }
 
   const getTextStyle = () => {
     if (streak >= 14) {
       return 'text-white'
     }
-    return 'text-black'
+    if (streak >= 3) {
+      return 'text-white' 
+    }
+    return 'text-[var(--foreground)]'
   }
 
   return (
     <div 
       className={`
-        relative overflow-hidden rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-5
+        relative overflow-hidden rounded-xl border-2 shadow-lg p-5
         ${getBgStyle()}
         transform transition-all duration-700
         ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}

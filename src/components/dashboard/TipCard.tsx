@@ -28,7 +28,7 @@ export function TipCard({ tip }: TipCardProps) {
   if (!tip) return null
 
   return (
-    <div className="py-5 bg-white rounded-xl shadow-sm p-6">
+    <div className="py-5 bg-[var(--card)] rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between mb-4 gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="p-3 rounded-xl bg-[var(--primary)]/15">
@@ -43,7 +43,7 @@ export function TipCard({ tip }: TipCardProps) {
           tip.category === 'walking' ? 'bg-[var(--accent)]/20 text-[var(--accent)]' :
           tip.category === 'consistency' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' :
           tip.category === 'weighing' ? 'bg-[var(--secondary)]/20 text-[var(--secondary)]' :
-          'bg-gray-100 text-[var(--foreground)]'
+          'bg-[var(--muted)] text-[var(--foreground)]'
         }`}>
           {categoryLabels[tip.category]}
         </span>
@@ -55,7 +55,7 @@ export function TipCard({ tip }: TipCardProps) {
         <>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)] hover:bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 mt-4 transition-all"
+            className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--card-hover)] px-3 py-2 rounded-xl border border-[var(--border)] hover:border-[var(--muted-foreground)] mt-4 transition-all"
           >
             {expanded ? (
               <>
@@ -71,7 +71,7 @@ export function TipCard({ tip }: TipCardProps) {
           </button>
 
           {expanded && (
-            <p className="text-sm text-[var(--foreground)] font-medium mt-3 p-4 rounded-xl bg-gray-50 leading-relaxed">
+            <p className="text-sm text-[var(--foreground)] font-medium mt-3 p-4 rounded-xl bg-[var(--muted)] leading-relaxed">
               {tip.extended_body}
             </p>
           )}

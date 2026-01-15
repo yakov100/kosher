@@ -20,7 +20,7 @@ export function ChallengeCard({ challenge, onComplete }: ChallengeCardProps) {
   if (!challenge) return null
 
   return (
-    <div className="py-5 bg-white rounded-xl shadow-sm p-6">
+    <div className="py-5 bg-[var(--card)] rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between mb-4 gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="p-3 rounded-xl bg-[var(--accent)]/15">
@@ -43,7 +43,7 @@ export function ChallengeCard({ challenge, onComplete }: ChallengeCardProps) {
       <p className="text-[var(--foreground)] font-medium mb-4 text-base">{challenge.description}</p>
 
       {challenge.rules && (
-        <p className="text-sm text-[var(--muted-foreground)] mb-4 font-medium p-3 rounded-xl bg-gray-50">💡 {challenge.rules}</p>
+        <p className="text-sm text-[var(--muted-foreground)] mb-4 font-medium p-3 rounded-xl bg-[var(--muted)]">💡 {challenge.rules}</p>
       )}
 
       {challenge.completed ? (

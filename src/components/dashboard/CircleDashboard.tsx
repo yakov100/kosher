@@ -32,23 +32,25 @@ export function CircleDashboard({
     <div className="flex flex-col items-center justify-center py-10 relative">
       {/* Top: Large Circle (Walking) */}
       <div 
-        className="relative z-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+        className="relative z-0 cursor-pointer transition-transform hover:scale-105 active:scale-95 group"
         onClick={onWalkingClick}
       >
+        <div className="absolute inset-0 bg-[var(--primary)]/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <ProgressRing 
           progress={walkingProgress} 
           size={220} 
           strokeWidth={12}
+          bgClassName="bg-gradient-to-br from-emerald-50 to-teal-50"
         >
           <div className="flex flex-col items-center text-center">
-            <Timer className="w-8 h-8 text-[var(--primary)] mb-2" />
-            <div className="text-4xl font-bold text-[var(--foreground)]">
+            <Timer className="w-8 h-8 text-emerald-600 mb-2" />
+            <div className="text-4xl font-bold text-slate-800">
               {walking.target}
             </div>
-            <div className="text-sm font-medium text-[var(--muted-foreground)]">
+            <div className="text-sm font-medium text-slate-500">
               דקות יעד
             </div>
-            <div className="text-xs text-[var(--primary)] mt-1 font-semibold">
+            <div className="text-xs text-emerald-600 mt-1 font-semibold">
               {walking.current > 0 ? `הלכת ${walking.current}` : 'טרם התחלת'}
             </div>
           </div>
@@ -57,30 +59,46 @@ export function CircleDashboard({
 
       {/* Bottom: Medium (Weight) and Small (Stats) */}
       <div className="flex items-center justify-center gap-4 -mt-16 relative z-10">
-        {/* Small Circle (Stats) */}
-        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[var(--accent)] to-purple-600 shadow-lg flex flex-col items-center justify-center text-white relative z-0 mb-4">
-          <div className="flex items-center gap-1 mb-1">
-            <Trophy size={14} />
-            <span className="text-lg font-bold">{gamification.level}</span>
-          </div>
-          <div className="w-12 h-0.5 bg-white/30 mb-1" />
-          <div className="flex items-center gap-1">
-            <Flame size={14} />
-            <span className="text-lg font-bold">{gamification.streak}</span>
+        {/* Small Circle (Stats/Level) */}
+        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-100 shadow-xl flex flex-col items-center justify-center text-slate-800 relative z-0 mb-4 overflow-hidden group">
+          <div className="absolute inset-0 bg-white/20 backdrop-blur-xl opacity-50" />
+          
+          <div className="relative z-10 flex flex-col items-center w-full">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="p-1 rounded-full bg-purple-100 text-purple-600">
+                <Trophy size={14} />
+              </div>
+              <span className="text-xl font-black">{gamification.level}</span>
+            </div>
+            
+            <div className="w-12 h-[1px] bg-purple-200 mb-1.5" />
+            
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 rounded-full bg-orange-100 text-orange-600">
+                <Flame size={14} />
+              </div>
+              <span className="text-xl font-black">{gamification.streak}</span>
+            </div>
           </div>
         </div>
 
         {/* Medium Circle (Weight) */}
         <button
           onClick={onWeightClick}
-          className="w-40 h-40 rounded-full bg-gradient-to-br from-[var(--secondary)] to-blue-600 border-4 border-white shadow-lg flex flex-col items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 relative z-10"
+          className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-50 to-cyan-50 border-4 border-[var(--background)] shadow-2xl flex flex-col items-center justify-center text-slate-800 transition-transform hover:scale-105 active:scale-95 relative z-10 overflow-hidden group"
         >
-          <Scale className="w-6 h-6 text-white mb-1" />
-          <div className="text-3xl font-bold text-white">
-            {weight.current > 0 ? weight.current : '--'}
-          </div>
-          <div className="text-xs font-medium text-blue-50">
-            ק״ג אחרון
+          <div className="absolute inset-0 bg-white/20 backdrop-blur-xl opacity-50" />
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="p-2 rounded-full bg-blue-100 text-blue-600 mb-1">
+              <Scale className="w-6 h-6" />
+            </div>
+            <div className="text-3xl font-black tracking-tight">
+              {weight.current > 0 ? weight.current : '--'}
+            </div>
+            <div className="text-xs font-medium text-slate-500">
+              ק״ג אחרון
+            </div>
           </div>
         </button>
       </div>

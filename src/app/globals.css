@@ -5,49 +5,56 @@ html {
 }
 
 :root {
-  /* Pastel Minimalist Playful Palette - Darker Background */
-  --background: #d4d4d4; /* even darker gray background */
-  --foreground: #111827; /* almost black */
-  --card: #ffffff; /* pure white remains for contrast */
-  --card-hover: #f3f4f6; /* light gray hover */
-  --border: #d1d5db; /* gray border */
-  --primary: #4ade80; /* more vibrant green */
-  --primary-hover: #22c55e; /* darker green */
-  --secondary: #60a5fa; /* more vibrant blue */
-  --secondary-hover: #3b82f6; /* darker blue */
-  --accent: #fb923c; /* more vibrant orange */
-  --accent-hover: #f97316; /* darker orange */
-  --muted: #e5e7eb; /* gray */
-  --muted-foreground: #4b5563; /* darker gray text */
+  /* Dark Elegant Palette with Subtle Colorful Touches */
+  --background: #0f172a; /* Slate 900 - Deep dark background */
+  --foreground: #f1f5f9; /* Slate 100 - High contrast text */
+  --card: #1e293b; /* Slate 800 - Card background */
+  --card-hover: #334155; /* Slate 700 - Hover state */
+  --border: #334155; /* Slate 700 - Subtle borders */
   
-  --radius-base: 20px; /* larger, friendlier radius */
-  --radius-sm: 12px; /* softer small radius */
-  --radius-lg: 28px; /* larger radius for hero sections */
+  /* Vibrant but respectful accents for dark mode */
+  --primary: #10b981; /* Emerald 500 - Success/Primary */
+  --primary-hover: #059669; /* Emerald 600 */
+  --secondary: #3b82f6; /* Blue 500 - Secondary actions */
+  --secondary-hover: #2563eb; /* Blue 600 */
+  --accent: #8b5cf6; /* Violet 500 - Subtle playful touch */
+  --accent-hover: #7c3aed; /* Violet 600 */
+  
+  --muted: #334155; /* Slate 700 */
+  --muted-foreground: #94a3b8; /* Slate 400 */
+  
+  --radius-base: 20px;
+  --radius-sm: 12px;
+  --radius-lg: 28px;
 }
 
 body {
-  min-height: 100vh;
   font-family: 'Rubik', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--background);
   color: var(--foreground);
+  /* Subtle colorful touches via gradient */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 
-/* Custom scrollbar */
+/* Hide scrollbar for clean app-like feel */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: #9ca3af; /* slightly darker gray */
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #6b7280; /* darker on hover */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent body scroll completely */
+  overscroll-behavior-y: none; /* Prevent bounce */
 }
 
 /* Number input without spinners */
@@ -71,10 +78,10 @@ input[type="number"] {
   animation: fadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Glow effects for gamification - pastel version */
+/* Glow effects for gamification - adjusted for dark mode */
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(255, 211, 182, 0.4); }
-  50% { box-shadow: 0 0 20px rgba(255, 211, 182, 0.6); }
+  0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
 }
 
 .glow-accent {

@@ -213,20 +213,20 @@ export function ChatAssistant() {
         aria-hidden={!isOpen}
         className={cn(
           "fixed bottom-24 left-6 z-50 w-[calc(100vw-3rem)] sm:w-96 max-h-[70vh]",
-          "flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-100",
+          "flex flex-col bg-[var(--card)] rounded-2xl shadow-2xl border border-[var(--border)]",
           "transition-all duration-300 origin-bottom-left overflow-hidden",
           isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
         )}
       >
         {/* Header */}
-        <div className="p-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50 flex items-center justify-between shrink-0">
+        <div className="p-4 border-b bg-gradient-to-r from-[var(--primary)]/10 to-[var(--secondary)]/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-emerald-500 text-white shadow-sm">
+            <div className="p-2 rounded-lg bg-[var(--primary)] text-white shadow-sm">
               <Bot size={20} aria-hidden="true" />
             </div>
             <div className="text-right">
-              <h3 className="font-bold text-gray-800 text-sm">קושר - העוזר האישי</h3>
-              <p className="text-xs text-gray-500">מוכן לעזור לך</p>
+              <h3 className="font-bold text-[var(--foreground)] text-sm">קושר - העוזר האישי</h3>
+              <p className="text-xs text-[var(--muted-foreground)]">מוכן לעזור לך</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -235,7 +235,7 @@ export function ChatAssistant() {
                 onClick={handleClearChat}
                 aria-label="נקה היסטוריה"
                 title="נקה היסטוריה"
-                className="p-2 hover:bg-black/5 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-[var(--card-hover)] rounded-full transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               >
                 <Trash2 size={18} aria-hidden="true" />
               </button>
@@ -243,7 +243,7 @@ export function ChatAssistant() {
             <button
               onClick={closeChat}
               aria-label="סגור צ'אט"
-              className="p-2 hover:bg-black/5 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+              className="p-2 hover:bg-[var(--card-hover)] rounded-full transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               <X size={20} aria-hidden="true" />
             </button>
@@ -252,7 +252,7 @@ export function ChatAssistant() {
 
         {/* Messages area */}
         <div 
-          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] bg-gray-50/50"
+          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] bg-[var(--background)]/50"
           role="log"
           aria-live="polite"
           aria-label="הודעות צ'אט"
@@ -261,12 +261,12 @@ export function ChatAssistant() {
           {messages.length === 0 && !isLoading && (
             <div className="space-y-4">
               <div className="text-center py-6 space-y-3">
-                <div className="inline-block p-4 rounded-full bg-emerald-100 text-emerald-600">
+                <div className="inline-block p-4 rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
                   <Sparkles size={32} aria-hidden="true" />
                 </div>
               </div>
               <div className="flex justify-start">
-                <div className="max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm bg-white text-gray-800 rounded-bl-none border border-gray-100">
+                <div className="max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm bg-[var(--card)] text-[var(--foreground)] rounded-bl-none border border-[var(--border)]">
                   {WELCOME_MESSAGE}
                 </div>
               </div>
@@ -286,8 +286,8 @@ export function ChatAssistant() {
                 className={cn(
                   "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
                   message.role === 'user'
-                    ? "bg-emerald-500 text-white rounded-br-none"
-                    : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
+                    ? "bg-[var(--primary)] text-black rounded-br-none"
+                    : "bg-[var(--card)] text-[var(--foreground)] rounded-bl-none border border-[var(--border)]"
                 )}
                 dir="rtl"
               >
@@ -301,10 +301,10 @@ export function ChatAssistant() {
           {/* Loading indicator */}
           {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
             <div className="flex justify-start">
-              <div className="bg-white p-3 rounded-2xl rounded-bl-none flex gap-1.5 items-center border border-gray-100 shadow-sm">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" />
+              <div className="bg-[var(--card)] p-3 rounded-2xl rounded-bl-none flex gap-1.5 items-center border border-[var(--border)] shadow-sm">
+                <div className="w-2 h-2 bg-[var(--primary)] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <div className="w-2 h-2 bg-[var(--primary)] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <div className="w-2 h-2 bg-[var(--primary)] rounded-full animate-bounce" />
               </div>
             </div>
           )}
@@ -329,7 +329,7 @@ export function ChatAssistant() {
         </div>
 
         {/* Input form */}
-        <div className="p-4 border-t bg-white shrink-0">
+        <div className="p-4 border-t bg-[var(--card)] shrink-0">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input
               ref={inputRef}
@@ -342,9 +342,9 @@ export function ChatAssistant() {
               aria-label="כתוב הודעה"
               maxLength={2000}
               className={cn(
-                "flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-right",
-                "focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent",
-                "placeholder:text-gray-400 transition-all",
+                "flex-1 bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-right text-[var(--foreground)]",
+                "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent",
+                "placeholder:text-[var(--muted-foreground)] transition-all",
                 isLoading && "opacity-50 cursor-not-allowed"
               )}
             />
@@ -355,8 +355,8 @@ export function ChatAssistant() {
               className={cn(
                 "p-2.5 rounded-xl transition-all shrink-0",
                 isSubmitDisabled
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 active:scale-95"
+                  ? "bg-[var(--muted)] text-[var(--muted-foreground)] cursor-not-allowed"
+                  : "bg-[var(--primary)] text-black hover:bg-[var(--primary-hover)] shadow-md shadow-[var(--primary)]/20 active:scale-95"
               )}
             >
               {isLoading ? (

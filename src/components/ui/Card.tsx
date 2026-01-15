@@ -13,10 +13,10 @@ interface CardProps {
 
 export function Card({ children, className, highlight, onClick, variant = 'default' }: CardProps) {
   const variantStyles = {
-    default: 'bg-white border-gray-100 shadow-sm',
-    primary: 'bg-white border-[var(--primary)]/20 shadow-sm',
-    secondary: 'bg-white border-[var(--secondary)]/20 shadow-sm',
-    accent: 'bg-white border-[var(--accent)]/20 shadow-sm',
+    default: 'bg-[var(--card)] border-[var(--border)] shadow-sm',
+    primary: 'bg-[var(--card)] border-[var(--primary)]/20 shadow-sm',
+    secondary: 'bg-[var(--card)] border-[var(--secondary)]/20 shadow-sm',
+    accent: 'bg-[var(--card)] border-[var(--accent)]/20 shadow-sm',
   }
 
   return (

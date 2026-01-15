@@ -53,19 +53,19 @@ export function WeightCard({ latestWeight, previousWeight, onUpdate }: WeightCar
           <div className="flex items-end justify-between">
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-black">{weight}</span>
-                <span className="text-xl font-bold text-gray-600">ק״ג</span>
+                <span className="text-5xl font-black text-[var(--foreground)]">{weight}</span>
+                <span className="text-xl font-bold text-[var(--muted-foreground)]">ק״ג</span>
               </div>
-              <div className="text-sm font-medium text-gray-600 mt-1">
+              <div className="text-sm font-medium text-[var(--muted-foreground)] mt-1">
                 {formatDate(latestWeight.recorded_at, 'dd/MM בשעה HH:mm')}
               </div>
             </div>
 
             {trend && (
-              <div className={`flex items-center gap-1 px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold text-sm ${
-                trend === 'down' ? 'bg-[var(--accent)] text-black' :
+              <div className={`flex items-center gap-1 px-3 py-2 rounded-xl border-2 border-[var(--border)] shadow-sm font-bold text-sm ${
+                trend === 'down' ? 'bg-[var(--accent)] text-white' :
                 trend === 'up' ? 'bg-[var(--secondary)] text-white' :
-                'bg-gray-200 text-black'
+                'bg-[var(--muted)] text-[var(--foreground)]'
               }`}>
                 {trend === 'down' && <TrendingDown size={16} />}
                 {trend === 'up' && <TrendingUp size={16} />}
@@ -77,7 +77,7 @@ export function WeightCard({ latestWeight, previousWeight, onUpdate }: WeightCar
             )}
           </div>
         ) : (
-          <div className="text-gray-600">
+          <div className="text-[var(--muted-foreground)]">
             <div className="text-xl font-bold mb-2">לא הוזן משקל עדיין</div>
             <div className="text-sm font-medium">לחץ להזנת משקל</div>
           </div>

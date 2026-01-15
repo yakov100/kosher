@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8">
         <Card className="w-full max-w-sm text-center">
           <div className="p-4 rounded-full bg-teal-500/20 text-teal-400 w-fit mx-auto mb-4">
             <Check size={32} />
@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8">
       <Card className="w-full max-w-sm">
         <div className="p-3 rounded-full bg-teal-500/20 text-teal-400 w-fit mx-auto mb-4">
           <Lock size={24} />
