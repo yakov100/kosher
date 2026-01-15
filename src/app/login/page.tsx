@@ -64,51 +64,51 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       {/* Logo & Branding */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 rounded-2xl bg-emerald-100">
-            <Heart className="w-8 h-8 text-emerald-600" />
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center justify-center gap-3 mb-5">
+          <div className="p-4 rounded-xl bg-[var(--primary)] border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+            <Heart className="w-10 h-10 text-black" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold gradient-text mb-2">שמור על עצמך</h1>
-        <p className="text-gray-500">מעקב משקל והליכה לשמירה על הבריאות</p>
+        <h1 className="text-5xl font-black text-black mb-3 uppercase tracking-wide">שמור על עצמך</h1>
+        <p className="text-lg font-bold text-gray-700">מעקב משקל והליכה לשמירה על הבריאות</p>
       </div>
 
       {/* Features */}
-      <div className="flex gap-6 mb-8">
+      <div className="flex gap-6 mb-10">
         <div className="flex flex-col items-center text-center">
-          <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600 mb-2">
-            <Footprints size={24} />
+          <div className="p-3 rounded-xl bg-[var(--accent)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mb-2">
+            <Footprints size={28} className="text-black" />
           </div>
-          <span className="text-xs text-gray-400">מעקב הליכה</span>
+          <span className="text-xs font-bold text-black uppercase">מעקב הליכה</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <div className="p-2 rounded-xl bg-violet-100 text-violet-600 mb-2">
-            <Scale size={24} />
+          <div className="p-3 rounded-xl bg-[var(--secondary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mb-2">
+            <Scale size={28} className="text-white" />
           </div>
-          <span className="text-xs text-gray-400">מעקב משקל</span>
+          <span className="text-xs font-bold text-black uppercase">מעקב משקל</span>
         </div>
       </div>
 
       {/* Form */}
       <Card className="w-full max-w-sm">
-        <div className="flex mb-6">
+        <div className="flex mb-6 gap-2">
           <button
             onClick={() => setMode('login')}
-            className={`flex-1 py-2 text-center font-medium transition-all border-b-2 ${
+            className={`flex-1 py-3 text-center font-black uppercase transition-all border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
               mode === 'login'
-                ? 'text-emerald-600 border-emerald-500'
-                : 'text-gray-400 border-transparent hover:text-gray-600'
+                ? 'bg-[var(--primary)] text-black'
+                : 'bg-white text-gray-400 hover:text-black hover:bg-gray-50'
             }`}
           >
             התחברות
           </button>
           <button
             onClick={() => setMode('signup')}
-            className={`flex-1 py-2 text-center font-medium transition-all border-b-2 ${
+            className={`flex-1 py-3 text-center font-black uppercase transition-all border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
               mode === 'signup'
-                ? 'text-emerald-600 border-emerald-500'
-                : 'text-gray-400 border-transparent hover:text-gray-600'
+                ? 'bg-[var(--primary)] text-black'
+                : 'bg-white text-gray-400 hover:text-black hover:bg-gray-50'
             }`}
           >
             הרשמה
@@ -138,11 +138,11 @@ export default function LoginPage() {
           />
 
           {error && (
-            <p className="text-sm text-rose-600 bg-rose-100 p-3 rounded-lg">{error}</p>
+            <p className="text-sm font-bold text-white bg-[var(--secondary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 rounded-xl">{error}</p>
           )}
 
           {message && (
-            <p className="text-sm text-emerald-600 bg-emerald-100 p-3 rounded-lg">{message}</p>
+            <p className="text-sm font-bold text-black bg-[var(--accent)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 rounded-xl">{message}</p>
           )}
 
           <Button
@@ -157,11 +157,11 @@ export default function LoginPage() {
         </form>
 
         {mode === 'login' && (
-          <p className="text-center text-sm text-gray-400 mt-4">
+          <p className="text-center text-sm font-bold text-black mt-4">
             שכחת סיסמה?{' '}
             <a
               href="/forgot-password"
-              className="text-emerald-600 hover:underline"
+              className="text-[var(--accent)] hover:underline font-black"
             >
               איפוס סיסמה
             </a>
@@ -169,7 +169,7 @@ export default function LoginPage() {
         )}
       </Card>
 
-      <p className="text-xs text-gray-400 mt-8 text-center">
+      <p className="text-xs font-medium text-gray-600 mt-8 text-center">
         בהתחברות אתה מסכים לתנאי השימוש ומדיניות הפרטיות
       </p>
     </div>

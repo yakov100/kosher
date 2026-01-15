@@ -44,7 +44,7 @@ export default function ProgressRing({
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="progress-ring transition-all duration-700 ease-out"
+          className="transition-all duration-700 ease-out"
         />
         <defs>
           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">

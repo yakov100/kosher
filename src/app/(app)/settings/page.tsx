@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Save, Target, Calendar, Bell, Lightbulb, LogOut, Timer } from 'lucide-react'
+import { Save, Target, Calendar, Bell, Lightbulb, LogOut, Timer, ArrowRight } from 'lucide-react'
 import { useSettings, useUser } from '@/hooks/useSupabase'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -74,8 +75,19 @@ export default function SettingsPage() {
     <div className="space-y-5">
       {/* Header */}
       <header>
-        <h1 className="text-2xl font-bold text-gray-700">הגדרות</h1>
-        <p className="text-gray-500 text-sm">{user?.email}</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">הגדרות</h1>
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<ArrowRight size={18} />}
+            >
+              חזרה
+            </Button>
+          </Link>
+        </div>
+        <p className="text-[var(--muted-foreground)] text-sm">{user?.email}</p>
       </header>
 
       {/* Goals */}

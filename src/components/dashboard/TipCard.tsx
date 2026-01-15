@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Lightbulb, ChevronDown, ChevronUp } from 'lucide-react'
-import { Card, CardHeader } from '@/components/ui/Card'
 import type { Tables } from '@/types/database'
 
 interface TipCardProps {
@@ -29,46 +28,55 @@ export function TipCard({ tip }: TipCardProps) {
   if (!tip) return null
 
   return (
-    <Card className="fade-in stagger-4">
-      <CardHeader
-        title="טיפ היום"
-        subtitle={tip.title}
-        icon={<Lightbulb size={20} />}
-        action={
-          <span className={`text-xs px-2 py-1 rounded-full ${categoryColors[tip.category]}`}>
-            {categoryLabels[tip.category]}
-          </span>
-        }
-      />
+    <div className="py-5 bg-white rounded-xl shadow-sm p-6">
+      <div className="flex items-start justify-between mb-4 gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="p-3 rounded-xl bg-[var(--primary)]/15">
+            <Lightbulb size={20} className="text-[var(--primary)]" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-base text-[var(--foreground)] leading-tight">טיפ היום</h3>
+            <p className="text-sm font-medium text-[var(--muted-foreground)] mt-1 break-words">{tip.title}</p>
+          </div>
+        </div>
+        <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl shrink-0 ${
+          tip.category === 'walking' ? 'bg-[var(--accent)]/20 text-[var(--accent)]' :
+          tip.category === 'consistency' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' :
+          tip.category === 'weighing' ? 'bg-[var(--secondary)]/20 text-[var(--secondary)]' :
+          'bg-gray-100 text-[var(--foreground)]'
+        }`}>
+          {categoryLabels[tip.category]}
+        </span>
+      </div>
 
-      <p className="text-gray-600 leading-relaxed">{tip.body}</p>
+      <p className="text-[var(--foreground)] font-medium leading-relaxed text-base mb-4">{tip.body}</p>
 
       {tip.extended_body && (
         <>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-500 mt-3 transition-colors"
+            className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)] hover:bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 hover:border-gray-300 mt-4 transition-all"
           >
             {expanded ? (
               <>
-                <ChevronUp size={16} />
+                <ChevronUp size={18} />
                 הסתר פרטים
               </>
             ) : (
               <>
-                <ChevronDown size={16} />
+                <ChevronDown size={18} />
                 קרא עוד
               </>
             )}
           </button>
 
           {expanded && (
-            <p className="text-sm text-gray-500 mt-3 p-3 rounded-lg bg-gray-50/80 leading-relaxed">
+            <p className="text-sm text-[var(--foreground)] font-medium mt-3 p-4 rounded-xl bg-gray-50 leading-relaxed">
               {tip.extended_body}
             </p>
           )}
         </>
       )}
-    </Card>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { UserProvider } from "@/providers/UserProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0f172a",
+  themeColor: "#fafafa",
 };
 
 export default function RootLayout({
@@ -25,12 +26,14 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="font-sans antialiased">
-        {children}
+        <UserProvider>
+          {children}
+        </UserProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

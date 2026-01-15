@@ -43,7 +43,7 @@ export function StreakFlame({ streak, size = 'md', showNumber = true }: StreakFl
       <div className="flex flex-col items-center gap-1">
         <span className={`${sizeClasses[size]} grayscale opacity-30`}>🔥</span>
         {showNumber && (
-          <span className={`${numberSizeClasses[size]} text-gray-400`}>אין רצף</span>
+          <span className={`${numberSizeClasses[size]} font-bold text-[var(--muted-foreground)]`}>אין רצף</span>
         )}
       </div>
     )
@@ -64,10 +64,8 @@ export function StreakFlame({ streak, size = 'md', showNumber = true }: StreakFl
 
       {/* Streak number */}
       {showNumber && (
-        <div className={`${numberSizeClasses[size]} font-bold relative z-10`}>
-          <span className={`bg-gradient-to-r ${colorClasses[intensity]} bg-clip-text text-transparent`}>
-            {streak} {streak === 1 ? 'יום' : 'ימים'}
-          </span>
+        <div className={`${numberSizeClasses[size]} font-black relative z-10 text-[var(--foreground)]`}>
+          {streak} {streak === 1 ? 'יום' : 'ימים'}
         </div>
       )}
 

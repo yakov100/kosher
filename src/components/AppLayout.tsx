@@ -8,7 +8,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-32">
       <main className="max-w-lg mx-auto px-4 py-6">
         {children}
       </main>

@@ -41,53 +41,53 @@ export function WeeklyStatusCard({
 
   return (
     <Card className="fade-in stagger-3">
-      <h3 className="font-semibold text-gray-600 mb-4">
+      <h3 className="font-black text-xl text-[var(--foreground)] mb-5 uppercase tracking-wide">
         סיכום שבועי ({formatDate(start, 'dd/MM')} - {formatDate(end, 'dd/MM')})
       </h3>
 
       <div className="grid grid-cols-4 gap-3">
         {/* Goal days */}
-        <div className="text-center p-3 rounded-xl bg-amber-50/80">
-          <Trophy className="w-5 h-5 text-amber-500 mx-auto mb-2" />
-          <div className="text-xl font-bold text-gray-700">
+        <div className="text-center p-3 rounded-[var(--radius-sm)] bg-[var(--primary)]/20 border border-[var(--primary)]/30">
+          <Trophy className="w-6 h-6 text-[var(--primary)] mx-auto mb-2" />
+          <div className="text-2xl font-black text-[var(--foreground)]">
             {goalDaysAchieved}
-            <span className="text-xs text-gray-400 font-normal">/{weeklyGoalDays}</span>
+            <span className="text-sm font-bold text-[var(--muted-foreground)]">/{weeklyGoalDays}</span>
           </div>
-          <div className="text-[10px] text-gray-400">ימי יעד</div>
+          <div className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase">ימי יעד</div>
         </div>
 
         {/* Logged days */}
-        <div className="text-center p-3 rounded-xl bg-emerald-50/80">
-          <Calendar className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-          <div className="text-xl font-bold text-gray-700">
+        <div className="text-center p-3 rounded-[var(--radius-sm)] bg-[var(--accent)]/20 border border-[var(--accent)]/30">
+          <Calendar className="w-6 h-6 text-[var(--accent)] mx-auto mb-2" />
+          <div className="text-2xl font-black text-[var(--foreground)]">
             {loggedDays}
-            <span className="text-xs text-gray-400 font-normal">/7</span>
+            <span className="text-sm font-bold text-[var(--muted-foreground)]">/7</span>
           </div>
-          <div className="text-[10px] text-gray-400">ימי הזנה</div>
+          <div className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase">ימי הזנה</div>
         </div>
 
         {/* Current Streak */}
-        <div className="text-center p-3 rounded-xl bg-gradient-to-br from-orange-50 to-rose-50 border border-orange-200/50">
-          <Flame className="w-5 h-5 text-orange-500 mx-auto mb-2" />
-          <div className="text-xl font-bold text-orange-500">
+        <div className="text-center p-3 rounded-[var(--radius-sm)] bg-[var(--secondary)]/20 border border-[var(--secondary)]/30">
+          <Flame className="w-6 h-6 text-[var(--secondary)] mx-auto mb-2" />
+          <div className="text-2xl font-black text-[var(--foreground)]">
             {currentStreak}
           </div>
-          <div className="text-[10px] text-gray-400">רצף נוכחי</div>
+          <div className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase">רצף נוכחי</div>
         </div>
 
         {/* Weight count */}
-        <div className="text-center p-3 rounded-xl bg-violet-50/80">
-          <Scale className="w-5 h-5 text-violet-500 mx-auto mb-2" />
-          <div className="text-xl font-bold text-gray-700">{weightCount}</div>
-          <div className="text-[10px] text-gray-400">שקילות</div>
+        <div className="text-center p-3 rounded-xl bg-gray-50 border border-gray-200">
+          <Scale className="w-6 h-6 text-[var(--muted-foreground)] mx-auto mb-2" />
+          <div className="text-2xl font-black text-[var(--foreground)]">{weightCount}</div>
+          <div className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase">שקילות</div>
         </div>
       </div>
 
       {/* Longest streak badge */}
       {longestStreak > 0 && (
-        <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500">
-          <span className="text-amber-500">🏆</span>
-          <span>רצף שיא: {longestStreak} ימים</span>
+        <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] bg-[var(--accent)]/20 border border-[var(--accent)]/30">
+          <span className="text-xl">🏆</span>
+          <span className="text-sm font-black text-[var(--foreground)] uppercase">רצף שיא: {longestStreak} ימים</span>
         </div>
       )}
     </Card>

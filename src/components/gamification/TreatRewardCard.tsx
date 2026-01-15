@@ -44,36 +44,36 @@ export function TreatRewardCard({ consecutiveGoalDays, targetDays = 14, onDismis
       
       <div 
         className={`
-          relative overflow-hidden rounded-2xl border-2 border-amber-300/60
-          bg-gradient-to-br from-amber-100/80 via-orange-50/70 to-pink-100/80
-          p-5 transition-all duration-700
+          relative overflow-hidden rounded-xl border-2 border-[var(--accent)]/40
+          bg-gradient-to-br from-[var(--accent)]/15 via-white to-[var(--accent)]/10
+          p-6 shadow-sm transition-all duration-700
           ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
         `}
       >
         {/* Animated sparkles background */}
         <div className="absolute inset-0 overflow-hidden">
-          <Sparkles className="absolute top-2 right-4 w-4 h-4 text-amber-400/60 animate-pulse" />
-          <Sparkles className="absolute top-8 left-6 w-3 h-3 text-pink-400/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
-          <Sparkles className="absolute bottom-4 right-8 w-5 h-5 text-orange-400/60 animate-pulse" style={{ animationDelay: '1s' }} />
-          <Gift className="absolute -bottom-2 -left-2 w-16 h-16 text-amber-300/20 rotate-12" />
+          <Sparkles className="absolute top-2 right-4 w-4 h-4 text-[var(--accent)]/60 animate-pulse" />
+          <Sparkles className="absolute top-8 left-6 w-3 h-3 text-[var(--primary)]/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
+          <Sparkles className="absolute bottom-4 right-8 w-5 h-5 text-[var(--accent)]/60 animate-pulse" style={{ animationDelay: '1s' }} />
+          <Gift className="absolute -bottom-2 -left-2 w-16 h-16 text-[var(--accent)]/20 rotate-12" />
         </div>
 
         {/* Content */}
         <div className="relative z-10">
           {/* Header */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            <PartyPopper className="w-6 h-6 text-amber-500 animate-bounce" />
-            <h3 className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+            <PartyPopper className="w-6 h-6 text-[var(--accent)] animate-bounce" />
+            <h3 className="text-xl font-bold text-[var(--foreground)]">
               מגיע לך פינוק!
             </h3>
-            <PartyPopper className="w-6 h-6 text-amber-500 animate-bounce" style={{ animationDelay: '0.2s' }} />
+            <PartyPopper className="w-6 h-6 text-[var(--accent)] animate-bounce" style={{ animationDelay: '0.2s' }} />
           </div>
 
           {/* Achievement */}
           <div className="text-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-200/70 to-orange-200/70 border border-amber-300/50">
-              <Heart className="w-4 h-4 text-pink-500" />
-              <span className="text-amber-800 font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)]/20 border border-[var(--accent)]/40">
+              <Heart className="w-4 h-4 text-[var(--primary)]" />
+              <span className="text-[var(--foreground)] font-medium">
                 {consecutiveGoalDays} ימים ברציפות עם יעד!
               </span>
               <span className="text-2xl">🎉</span>
@@ -81,18 +81,18 @@ export function TreatRewardCard({ consecutiveGoalDays, targetDays = 14, onDismis
           </div>
 
           {/* Message */}
-          <p className="text-center text-gray-600 mb-4">
+          <p className="text-center text-[var(--muted-foreground)] mb-4">
             עבדת קשה והגעת ליעדים שלך במשך שבועיים שלמים!
             <br />
-            <span className="text-amber-600 font-medium">הגיע הזמן לפנק את עצמך 💛</span>
+            <span className="text-[var(--accent)] font-medium">הגיע הזמן לפנק את עצמך 💛</span>
           </p>
 
           {/* Treat suggestion */}
-          <div className="bg-white/70 rounded-xl p-4 border border-gray-200/50">
-            <div className="text-xs text-gray-400 mb-2 text-center">הצעה לפינוק:</div>
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="text-xs text-[var(--muted-foreground)] mb-2 text-center">הצעה לפינוק:</div>
             <div className="flex items-center justify-center gap-3">
               <span className="text-3xl">{randomTreat.icon}</span>
-              <span className="text-gray-700 font-medium">{randomTreat.text}</span>
+              <span className="text-[var(--foreground)] font-medium">{randomTreat.text}</span>
             </div>
           </div>
 
@@ -100,7 +100,7 @@ export function TreatRewardCard({ consecutiveGoalDays, targetDays = 14, onDismis
           {onDismiss && (
             <button 
               onClick={onDismiss}
-              className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="mt-4 w-full py-2 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
               תודה, אשמח לפינוק! ✨
             </button>

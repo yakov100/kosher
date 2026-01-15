@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { getToday, getLast7Days, getLast30Days } from '@/lib/utils'
+import { useUserContext } from '@/providers/UserProvider'
+import useSWR, { mutate } from 'swr'
 
 // Create supabase client lazily
 function getSupabase() {
@@ -76,36 +78,15 @@ interface Challenge {
 
 // Auth hook
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await getSupabase().auth.getUser()
-      setUser(user)
-      setLoading(false)
-    }
-
-    getUser()
-
-    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((_event: unknown, session: { user: User | null } | null) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  return { user, loading }
+  return useUserContext()
 }
 
 // Settings hook
 export function useSettings() {
   const { user } = useUser()
-  const [settings, setSettings] = useState<WeightTrackerSettings | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchSettings = useCallback(async () => {
-    if (!user) return
+  
+  const fetchSettings = async () => {
+    if (!user) return null
 
     const { data, error } = await getSupabase()
       .from('weight_tracker_settings')
@@ -115,6 +96,7 @@ export function useSettings() {
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching settings:', error)
+      throw error
     }
 
     // Create default settings if none exist
@@ -131,22 +113,27 @@ export function useSettings() {
 
       if (insertError) {
         console.error('Error creating settings:', insertError)
-      } else {
-        setSettings(newData)
+        throw insertError
       }
-    } else {
-      setSettings(data)
+      return newData as WeightTrackerSettings
     }
+    
+    return data as WeightTrackerSettings
+  }
 
-    setLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    fetchSettings()
-  }, [fetchSettings])
+  const { data: settings, error, isLoading, mutate: mutateSettings } = useSWR(
+    user ? ['settings', user.id] : null,
+    fetchSettings,
+    {
+      revalidateOnFocus: false, // Don't revalidate on window focus to reduce reads
+    }
+  )
 
   const updateSettings = async (updates: Partial<WeightTrackerSettings>) => {
     if (!user || !settings) return
+
+    // Optimistic update
+    mutateSettings({ ...settings, ...updates }, false)
 
     const { data, error } = await getSupabase()
       .from('weight_tracker_settings')
@@ -157,47 +144,44 @@ export function useSettings() {
 
     if (error) {
       console.error('Error updating settings:', error)
+      mutateSettings() // Revert on error
       throw error
     }
 
-    setSettings(data)
+    mutateSettings(data)
     return data
   }
 
-  return { settings, loading, updateSettings, refetch: fetchSettings }
+  return { settings: settings || null, loading: isLoading, updateSettings, refetch: mutateSettings }
 }
 
 // Walking hook (דקות הליכה)
 export function useWalking() {
   const { user } = useUser()
-  const [records, setRecords] = useState<WalkingRecord[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const fetchRecords = useCallback(async (days: number = 30) => {
-    if (!user) return
-
+  
+  const fetchRecords = async ([, userId, days]: [string, string, number]) => {
     const dates = days === 7 ? getLast7Days() : getLast30Days()
     const startDate = dates[0]
 
     const { data, error } = await getSupabase()
       .from('steps_records')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .gte('date', startDate)
       .order('date', { ascending: false })
 
     if (error) {
       console.error('Error fetching walking records:', error)
-    } else {
-      setRecords(data || [])
+      throw error
     }
+    
+    return data as WalkingRecord[]
+  }
 
-    setLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    fetchRecords()
-  }, [fetchRecords])
+  const { data: records = [], isLoading, mutate: mutateRecords } = useSWR(
+    user ? ['walking', user.id, 30] : null,
+    fetchRecords
+  )
 
   const getTodayRecord = () => {
     return records.find(r => r.date === getToday())
@@ -207,7 +191,27 @@ export function useWalking() {
     if (!user) return
 
     const existing = records.find(r => r.date === date)
+    
+    // Optimistic update
+    const optimisticRecord = existing 
+      ? { ...existing, minutes, note, updated_at: new Date().toISOString() }
+      : { 
+          id: 'temp-' + Date.now(), 
+          user_id: user.id, 
+          date, 
+          minutes, 
+          note: note || null, 
+          created_at: new Date().toISOString(), 
+          updated_at: new Date().toISOString() 
+        }
+    
+    const newRecords = existing
+      ? records.map(r => r.date === date ? optimisticRecord : r)
+      : [optimisticRecord as WalkingRecord, ...records].sort((a, b) => b.date.localeCompare(a.date))
+      
+    mutateRecords(newRecords, false)
 
+    let result
     if (existing) {
       const { data, error } = await getSupabase()
         .from('steps_records')
@@ -216,10 +220,11 @@ export function useWalking() {
         .select()
         .single()
 
-      if (error) throw error
-      
-      setRecords(prev => prev.map(r => r.id === existing.id ? data : r))
-      return data
+      if (error) {
+        mutateRecords() // Revert
+        throw error
+      }
+      result = data
     } else {
       const { data, error } = await getSupabase()
         .from('steps_records')
@@ -227,26 +232,37 @@ export function useWalking() {
         .select()
         .single()
 
-      if (error) throw error
-      
-      setRecords(prev => [data, ...prev])
-      return data
+      if (error) {
+        mutateRecords() // Revert
+        throw error
+      }
+      result = data
     }
+
+    // Revalidate to ensure consistency
+    mutateRecords() 
+    return result
   }
 
   const deleteRecord = async (id: string) => {
+    // Optimistic update
+    mutateRecords(records.filter(r => r.id !== id), false)
+    
     const { error } = await getSupabase()
       .from('steps_records')
       .delete()
       .eq('id', id)
 
-    if (error) throw error
-    
-    setRecords(prev => prev.filter(r => r.id !== id))
+    if (error) {
+      mutateRecords() // Revert
+      throw error
+    }
   }
 
   // Calculate consecutive days where walking goal was achieved
   const getConsecutiveGoalDays = (dailyGoal: number): { consecutiveDays: number; todayGoalMet: boolean } => {
+    if (!records.length) return { consecutiveDays: 0, todayGoalMet: false }
+    
     const today = getToday()
     const todayRecord = records.find(r => r.date === today)
     const todayGoalMet = todayRecord ? todayRecord.minutes >= dailyGoal : false
@@ -283,7 +299,7 @@ export function useWalking() {
     return { consecutiveDays, todayGoalMet }
   }
 
-  return { records, loading, getTodayRecord, addOrUpdateRecord, deleteRecord, getConsecutiveGoalDays, refetch: fetchRecords }
+  return { records, loading: isLoading, getTodayRecord, addOrUpdateRecord, deleteRecord, getConsecutiveGoalDays, refetch: mutateRecords }
 }
 
 // Backward compatibility alias
@@ -303,34 +319,30 @@ export function useSteps() {
 // Weight hook
 export function useWeight() {
   const { user } = useUser()
-  const [weights, setWeights] = useState<WeightRecord[]>([])
-  const [loading, setLoading] = useState(true)
 
-  const fetchWeights = useCallback(async (days: number = 90) => {
-    if (!user) return
-
+  const fetchWeights = async ([, userId, days]: [string, string, number]) => {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
     const { data, error } = await getSupabase()
       .from('weight_records')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .gte('recorded_at', startDate.toISOString())
       .order('recorded_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching weights:', error)
-    } else {
-      setWeights(data || [])
+      throw error
     }
+    
+    return data as WeightRecord[]
+  }
 
-    setLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    fetchWeights()
-  }, [fetchWeights])
+  const { data: weights = [], isLoading, mutate: mutateWeights } = useSWR(
+    user ? ['weights', user.id, 90] : null,
+    fetchWeights
+  )
 
   const getLatestWeight = () => {
     return weights[0]
@@ -338,6 +350,22 @@ export function useWeight() {
 
   const addWeight = async (weight: number, recordedAt?: string, note?: string) => {
     if (!user) return
+
+    const newRecord = {
+      id: 'temp-' + Date.now(),
+      user_id: user.id,
+      weight,
+      recorded_at: recordedAt || new Date().toISOString(),
+      note: note || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // Optimistic update
+    const newWeights = [newRecord as WeightRecord, ...weights].sort((a, b) => 
+      new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
+    )
+    mutateWeights(newWeights, false)
 
     const { data, error } = await getSupabase()
       .from('weight_records')
@@ -350,15 +378,21 @@ export function useWeight() {
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      mutateWeights() // Revert
+      throw error
+    }
     
-    setWeights(prev => [data, ...prev].sort((a, b) => 
-      new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
-    ))
+    // Revalidate
+    mutateWeights()
     return data
   }
 
   const updateWeight = async (id: string, updates: Partial<WeightRecord>) => {
+    // Optimistic update
+    const newWeights = weights.map(w => w.id === id ? { ...w, ...updates } : w)
+    mutateWeights(newWeights, false)
+
     const { data, error } = await getSupabase()
       .from('weight_records')
       .update(updates as never)
@@ -366,163 +400,184 @@ export function useWeight() {
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      mutateWeights() // Revert
+      throw error
+    }
     
-    setWeights(prev => prev.map(w => w.id === id ? data : w))
+    mutateWeights()
     return data
   }
 
   const deleteWeight = async (id: string) => {
+    // Optimistic update
+    mutateWeights(weights.filter(w => w.id !== id), false)
+
     const { error } = await getSupabase()
       .from('weight_records')
       .delete()
       .eq('id', id)
 
-    if (error) throw error
-    
-    setWeights(prev => prev.filter(w => w.id !== id))
+    if (error) {
+      mutateWeights() // Revert
+      throw error
+    }
   }
 
-  return { weights, loading, getLatestWeight, addWeight, updateWeight, deleteWeight, refetch: fetchWeights }
+  return { weights, loading: isLoading, getLatestWeight, addWeight, updateWeight, deleteWeight, refetch: mutateWeights }
 }
 
 // Daily tip/challenge hook
 export function useDailyContent() {
   const { user } = useUser()
-  const [tip, setTip] = useState<Tip | null>(null)
-  const [challenge, setChallenge] = useState<(Challenge & { completed: boolean; historyId: string }) | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchDailyContent = useCallback(async () => {
-    if (!user) return
+  
+  const fetchDailyContent = async () => {
+    if (!user) return null
 
     const today = getToday()
 
-    // Check for existing tip today
-    const { data: tipHistory } = await getSupabase()
-      .from('daily_tip_history')
-      .select('tip_id, tips(*)')
-      .eq('user_id', user.id)
-      .eq('shown_date', today)
-      .single()
-
-    const tipHistoryTyped = tipHistory as { tips: Tip } | null
-    if (tipHistoryTyped?.tips) {
-      setTip(tipHistoryTyped.tips)
-    } else {
-      // Get tips shown in last 30 days
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      
-      const { data: recentTips } = await getSupabase()
+    const fetchTipPromise = (async () => {
+      // Check for existing tip today
+      const { data: tipHistory } = await getSupabase()
         .from('daily_tip_history')
-        .select('tip_id')
+        .select('tip_id, tips(*)')
         .eq('user_id', user.id)
-        .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+        .eq('shown_date', today)
+        .single()
 
-      const recentTipIds = recentTips?.map((t: { tip_id: string }) => t.tip_id) || []
-
-      // Get a random tip not shown recently
-      let query = getSupabase()
-        .from('tips')
-        .select('*')
-        .eq('is_active', true)
-
-      if (recentTipIds.length > 0) {
-        query = query.not('id', 'in', `(${recentTipIds.join(',')})`)
-      }
-
-      const { data: availableTips } = await query
-
-      if (availableTips && availableTips.length > 0) {
-        const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)] as Tip
+      const tipHistoryTyped = tipHistory as { tips: Tip } | null
+      if (tipHistoryTyped?.tips) {
+        return tipHistoryTyped.tips
+      } else {
+        // Get tips shown in last 30 days
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
         
-        // Save to history
-        await getSupabase().from('daily_tip_history').insert({
-          user_id: user.id,
-          tip_id: randomTip.id,
-          shown_date: today,
-        } as never)
+        const { data: recentTips } = await getSupabase()
+          .from('daily_tip_history')
+          .select('tip_id')
+          .eq('user_id', user.id)
+          .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
 
-        setTip(randomTip)
-      }
-    }
+        const recentTipIds = recentTips?.map((t: { tip_id: string }) => t.tip_id) || []
 
-    // Check for existing challenge today
-    const { data: challengeHistory } = await getSupabase()
-      .from('daily_challenge_history')
-      .select('*, challenges(*)')
-      .eq('user_id', user.id)
-      .eq('shown_date', today)
-      .single()
+        // Get a random tip not shown recently
+        let query = getSupabase()
+          .from('tips')
+          .select('*')
+          .eq('is_active', true)
 
-    const challengeHistoryTyped = challengeHistory as { challenges: Challenge; completed: boolean; id: string } | null
-    if (challengeHistoryTyped?.challenges) {
-      setChallenge({
-        ...challengeHistoryTyped.challenges,
-        completed: challengeHistoryTyped.completed,
-        historyId: challengeHistoryTyped.id,
-      })
-    } else {
-      // Get challenges shown in last 30 days
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      
-      const { data: recentChallenges } = await getSupabase()
-        .from('daily_challenge_history')
-        .select('challenge_id')
-        .eq('user_id', user.id)
-        .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+        if (recentTipIds.length > 0) {
+          query = query.not('id', 'in', `(${recentTipIds.join(',')})`)
+        }
 
-      const recentChallengeIds = recentChallenges?.map((c: { challenge_id: string }) => c.challenge_id) || []
+        const { data: availableTips } = await query
 
-      // Get a random challenge not shown recently
-      let query = getSupabase()
-        .from('challenges')
-        .select('*')
-        .eq('is_active', true)
-        .eq('difficulty', 'easy') // Start with easy challenges
-
-      if (recentChallengeIds.length > 0) {
-        query = query.not('id', 'in', `(${recentChallengeIds.join(',')})`)
-      }
-
-      const { data: availableChallenges } = await query
-
-      if (availableChallenges && availableChallenges.length > 0) {
-        const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)] as Challenge
-        
-        // Save to history
-        const { data: newHistory } = await getSupabase()
-          .from('daily_challenge_history')
-          .insert({
+        if (availableTips && availableTips.length > 0) {
+          const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)] as Tip
+          
+          // Save to history
+          await getSupabase().from('daily_tip_history').insert({
             user_id: user.id,
-            challenge_id: randomChallenge.id,
+            tip_id: randomTip.id,
             shown_date: today,
           } as never)
-          .select()
-          .single()
 
-        const newHistoryTyped = newHistory as { id: string } | null
-        if (newHistoryTyped) {
-          setChallenge({
-            ...randomChallenge,
-            completed: false,
-            historyId: newHistoryTyped.id,
-          })
+          return randomTip
         }
       }
+      return null
+    })()
+
+    const fetchChallengePromise = (async () => {
+      // Check for existing challenge today
+      const { data: challengeHistory } = await getSupabase()
+        .from('daily_challenge_history')
+        .select('*, challenges(*)')
+        .eq('user_id', user.id)
+        .eq('shown_date', today)
+        .single()
+
+      const challengeHistoryTyped = challengeHistory as { challenges: Challenge; completed: boolean; id: string } | null
+      if (challengeHistoryTyped?.challenges) {
+        return {
+          ...challengeHistoryTyped.challenges,
+          completed: challengeHistoryTyped.completed,
+          historyId: challengeHistoryTyped.id,
+        }
+      } else {
+        // Get challenges shown in last 30 days
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        
+        const { data: recentChallenges } = await getSupabase()
+          .from('daily_challenge_history')
+          .select('challenge_id')
+          .eq('user_id', user.id)
+          .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+
+        const recentChallengeIds = recentChallenges?.map((c: { challenge_id: string }) => c.challenge_id) || []
+
+        // Get a random challenge not shown recently
+        let query = getSupabase()
+          .from('challenges')
+          .select('*')
+          .eq('is_active', true)
+          .eq('difficulty', 'easy') // Start with easy challenges
+
+        if (recentChallengeIds.length > 0) {
+          query = query.not('id', 'in', `(${recentChallengeIds.join(',')})`)
+        }
+
+        const { data: availableChallenges } = await query
+
+        if (availableChallenges && availableChallenges.length > 0) {
+          const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)] as Challenge
+          
+          // Save to history
+          const { data: newHistory } = await getSupabase()
+            .from('daily_challenge_history')
+            .insert({
+              user_id: user.id,
+              challenge_id: randomChallenge.id,
+              shown_date: today,
+            } as never)
+            .select()
+            .single()
+
+          const newHistoryTyped = newHistory as { id: string } | null
+          if (newHistoryTyped) {
+            return {
+              ...randomChallenge,
+              completed: false,
+              historyId: newHistoryTyped.id,
+            }
+          }
+        }
+      }
+      return null
+    })()
+
+    const [tip, challenge] = await Promise.all([fetchTipPromise, fetchChallengePromise])
+    return { tip, challenge }
+  }
+
+  const { data, isLoading, mutate: mutateDaily } = useSWR(
+    user ? ['dailyContent', user.id, getToday()] : null,
+    fetchDailyContent,
+    {
+      revalidateOnFocus: false, // Don't revalidate on focus as daily content doesn't change during the day
     }
-
-    setLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    fetchDailyContent()
-  }, [fetchDailyContent])
+  )
 
   const completeChallenge = async () => {
-    if (!challenge) return
+    if (!data?.challenge) return
+
+    // Optimistic update
+    mutateDaily({ 
+      ...data, 
+      challenge: { ...data.challenge, completed: true } 
+    }, false)
 
     const { error } = await getSupabase()
       .from('daily_challenge_history')
@@ -530,12 +585,22 @@ export function useDailyContent() {
         completed: true,
         completed_at: new Date().toISOString(),
       } as never)
-      .eq('id', challenge.historyId)
+      .eq('id', data.challenge.historyId)
 
-    if (error) throw error
-
-    setChallenge(prev => prev ? { ...prev, completed: true } : null)
+    if (error) {
+      mutateDaily() // Revert
+      throw error
+    }
+    
+    // Revalidate
+    mutateDaily()
   }
 
-  return { tip, challenge, loading, completeChallenge, refetch: fetchDailyContent }
+  return { 
+    tip: data?.tip || null, 
+    challenge: data?.challenge || null, 
+    loading: isLoading, 
+    completeChallenge, 
+    refetch: mutateDaily 
+  }
 }

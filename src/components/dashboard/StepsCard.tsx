@@ -34,11 +34,11 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
     <>
       <Card 
         highlight={!hasData} 
-        className={`fade-in stagger-1 relative overflow-hidden ${isGoalReached ? 'border-emerald-400/50' : ''}`}
+        className={`fade-in stagger-1 relative overflow-hidden ${isGoalReached ? 'border-[var(--primary)]' : ''}`}
       >
         {/* Celebration background for goal reached */}
         {isGoalReached && (
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/60 via-transparent to-violet-100/60" />
+          <div className="absolute inset-0 bg-[var(--primary)]/20" />
         )}
 
         <CardHeader
@@ -60,26 +60,26 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
           <div className="flex-1">
             {hasData ? (
               <>
-                <div className={`text-4xl font-bold mb-1 ${isGoalReached ? 'text-emerald-600' : 'text-gray-700'}`}>
+                <div className={`text-5xl font-black mb-2 ${isGoalReached ? 'text-[var(--primary)]' : 'text-black'}`}>
                   {formatMinutes(minutes)}
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm font-bold text-gray-600">
                   מתוך {dailyGoal} דקות
                 </div>
                 {isGoalReached && (
-                  <div className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-violet-100 border border-emerald-300/50">
-                    <span className="text-lg animate-bounce">🎉</span>
-                    <span className="font-bold bg-gradient-to-r from-emerald-600 to-violet-600 bg-clip-text text-transparent">
+                  <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--primary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <span className="text-xl animate-bounce">🎉</span>
+                    <span className="font-black text-black uppercase tracking-wide">
                       יעד הושג!
                     </span>
-                    <Star className="w-4 h-4 text-amber-500 animate-pulse" />
+                    <Star className="w-5 h-5 text-black animate-pulse" />
                   </div>
                 )}
               </>
             ) : (
-              <div className="text-gray-500">
-                <div className="text-lg mb-1">לא הוזנה הליכה עדיין</div>
-                <div className="text-sm">לחץ להזנת דקות הליכה ולצבור XP! ⭐</div>
+              <div className="text-gray-600">
+                <div className="text-xl font-bold mb-2">לא הוזנה הליכה עדיין</div>
+                <div className="text-sm font-medium">לחץ להזנת דקות הליכה ולצבור XP! ⭐</div>
               </div>
             )}
           </div>
@@ -87,7 +87,7 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
           <div className="relative">
             <ProgressRing progress={progress} size={100} strokeWidth={8}>
               <div className="text-center">
-                <div className={`text-2xl font-bold ${isGoalReached ? 'text-emerald-600' : 'text-emerald-500'}`}>
+                <div className={`text-2xl font-black ${isGoalReached ? 'text-[var(--primary)]' : 'text-black'}`}>
                   {progress}%
                 </div>
               </div>
@@ -95,7 +95,7 @@ export function WalkingCard({ todayRecord, dailyGoal, onUpdate, goalReached }: W
             
             {/* Achievement badge for goal reached */}
             {isGoalReached && (
-              <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center text-sm shadow-lg shadow-amber-300/40 animate-pulse text-white">
+              <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full bg-[var(--primary)] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-lg font-black animate-pulse text-black">
                 ✓
               </div>
             )}
