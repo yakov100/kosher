@@ -5,12 +5,12 @@ html {
 }
 
 :root {
-  /* Dark Elegant Palette with Subtle Colorful Touches */
-  --background: #0f172a; /* Slate 900 - Deep dark background */
-  --foreground: #f1f5f9; /* Slate 100 - High contrast text */
-  --card: #1e293b; /* Slate 800 - Card background */
-  --card-hover: #334155; /* Slate 700 - Hover state */
-  --border: #334155; /* Slate 700 - Subtle borders */
+  /* Medium Dark Gray Palette */
+  --background: #2d2d2d; /* Medium dark gray background */
+  --foreground: #f5f5f5; /* Light text */
+  --card: #3a3a3a; /* Lighter gray card */
+  --card-hover: #454545; /* Hover state */
+  --border: #4a4a4a; /* Subtle borders */
   
   /* Vibrant but respectful accents for dark mode */
   --primary: #10b981; /* Emerald 500 - Success/Primary */
@@ -20,8 +20,8 @@ html {
   --accent: #8b5cf6; /* Violet 500 - Subtle playful touch */
   --accent-hover: #7c3aed; /* Violet 600 */
   
-  --muted: #334155; /* Slate 700 */
-  --muted-foreground: #94a3b8; /* Slate 400 */
+  --muted: #454545; /* Medium gray */
+  --muted-foreground: #b0b0b0; /* Light gray */
   
   --radius-base: 20px;
   --radius-sm: 12px;
@@ -32,11 +32,10 @@ body {
   font-family: 'Rubik', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--background);
   color: var(--foreground);
-  /* Subtle colorful touches via gradient */
+  /* Subtle gradient touches */
   background-image: 
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
