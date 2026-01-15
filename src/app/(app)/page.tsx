@@ -99,7 +99,7 @@ export default function DashboardPage() {
       {/* Navigation to detailed stats */}
       <div className="mt-8 px-8">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           fullWidth 
           onClick={() => router.push('/stats')}
           className="flex items-center justify-center gap-2 py-6 text-lg"
