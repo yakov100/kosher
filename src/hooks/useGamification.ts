@@ -181,7 +181,55 @@ export function useGamification() {
     fetchGamificationData
   )
 
-  const gamification = data?.gamification || null
+  // Check and reset streak if user hasn't been active recently
+  const getValidatedStreak = useCallback((gam: UserGamification | null): number => {
+    if (!gam || !gam.last_activity_date) return 0
+
+    const today = getToday()
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+    // If last activity was today or yesterday, streak is valid
+    if (gam.last_activity_date === today || gam.last_activity_date === yesterdayStr) {
+      return gam.current_streak
+    }
+
+    // Otherwise, streak should be 0 (will become 1 when they log activity)
+    return 0
+  }, [])
+
+  // Reset streak in database if it's stale
+  useEffect(() => {
+    const resetStaleStreak = async () => {
+      if (!user || !data?.gamification) return
+
+      const gam = data.gamification
+      const validStreak = getValidatedStreak(gam)
+
+      // If the displayed streak differs from stored, update database
+      if (validStreak === 0 && gam.current_streak > 0) {
+        await getSupabase()
+          .from('user_gamification')
+          .update({ 
+            current_streak: 0,
+            updated_at: new Date().toISOString()
+          } as never)
+          .eq('user_id', user.id)
+        
+        mutate()
+      }
+    }
+
+    resetStaleStreak()
+  }, [user, data?.gamification, getValidatedStreak, mutate])
+
+  const rawGamification = data?.gamification || null
+  // Apply streak validation to displayed data
+  const gamification = rawGamification ? {
+    ...rawGamification,
+    current_streak: getValidatedStreak(rawGamification)
+  } : null
   const achievements = data?.achievements || []
   const userAchievements = data?.userAchievements || []
 

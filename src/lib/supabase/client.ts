@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, SupabaseClient } from '@supabase/ssr'
 import type { Database } from '@/types/database'
 
 const SUPABASE_URL = 'https://nklwzunoipplfkysaztl.supabase.co'
@@ -14,7 +14,14 @@ function isValidSupabaseUrl(value: string) {
   }
 }
 
+// Singleton pattern - reuse the same client instance
+let supabaseClient: SupabaseClient<Database> | null = null
+
 export function createClient() {
+  if (supabaseClient) {
+    return supabaseClient
+  }
+
   const envSupabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim()
   const envSupabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '').trim()
 
@@ -23,8 +30,10 @@ export function createClient() {
     : SUPABASE_URL
   const supabaseAnonKey = envSupabaseAnonKey || SUPABASE_ANON_KEY
 
-  return createBrowserClient<Database>(
+  supabaseClient = createBrowserClient<Database>(
     supabaseUrl,
     supabaseAnonKey
   )
+
+  return supabaseClient
 }

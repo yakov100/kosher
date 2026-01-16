@@ -558,8 +558,46 @@ export function useDailyContent() {
       return null
     })()
 
-    const [tip, challenge] = await Promise.all([fetchTipPromise, fetchChallengePromise])
-    return { tip, challenge }
+    // Calculate challenge streak (consecutive days with completed challenges)
+    const fetchChallengeStreak = async () => {
+      const { data: completedChallenges } = await getSupabase()
+        .from('daily_challenge_history')
+        .select('shown_date, completed')
+        .eq('user_id', user.id)
+        .eq('completed', true)
+        .order('shown_date', { ascending: false })
+        .limit(30)
+
+      if (!completedChallenges || completedChallenges.length === 0) return 0
+
+      let streak = 0
+      const today = getToday()
+      let checkDate = new Date(today)
+
+      for (let i = 0; i < 30; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0]
+        const hasCompleted = completedChallenges.some(c => c.shown_date === dateStr)
+        
+        if (hasCompleted) {
+          streak++
+          checkDate.setDate(checkDate.getDate() - 1)
+        } else if (dateStr === today) {
+          // Today not completed yet - check from yesterday
+          checkDate.setDate(checkDate.getDate() - 1)
+        } else {
+          break
+        }
+      }
+
+      return streak
+    }
+
+    const [tip, challenge, challengeStreak] = await Promise.all([
+      fetchTipPromise, 
+      fetchChallengePromise,
+      fetchChallengeStreak()
+    ])
+    return { tip, challenge, challengeStreak }
   }
 
   const { data, isLoading, mutate: mutateDaily } = useSWR(
@@ -599,6 +637,7 @@ export function useDailyContent() {
   return { 
     tip: data?.tip || null, 
     challenge: data?.challenge || null, 
+    challengeStreak: data?.challengeStreak || 0,
     loading: isLoading, 
     completeChallenge, 
     refetch: mutateDaily 

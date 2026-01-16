@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatHebrewDate } from '@/lib/utils'
-import { useWalking, useWeight, useSettings } from '@/hooks/useSupabase'
+import { useWalking, useWeight, useSettings, useDailyContent } from '@/hooks/useSupabase'
 import { useGamification } from '@/hooks/useGamification'
 import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WeightEntryModal } from '@/components/weight/WeightEntryModal'
 import { CircleDashboard } from '@/components/dashboard/CircleDashboard'
+import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { AchievementPopup, Confetti } from '@/components/gamification'
 import { Button } from '@/components/ui/Button'
 import { BarChart2 } from 'lucide-react'
-import type { Tables } from '@/types/database'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -28,6 +28,7 @@ export default function DashboardPage() {
     addXP,
     loading: gamificationLoading 
   } = useGamification()
+  const { challenge, challengeStreak, completeChallenge, loading: challengeLoading } = useDailyContent()
   
   const [today] = useState(new Date())
   const [showGoalConfetti, setShowGoalConfetti] = useState(false)
@@ -57,7 +58,18 @@ export default function DashboardPage() {
     await addXP(15)
   }
 
-  if (settingsLoading || gamificationLoading) {
+  const handleChallengeComplete = async () => {
+    try {
+      await completeChallenge()
+      await incrementStat('challenge')
+      await addXP(50)
+      setShowGoalConfetti(true)
+    } catch (error) {
+      console.error('Error completing challenge:', error)
+    }
+  }
+
+  if (settingsLoading || gamificationLoading || challengeLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-pulse text-[var(--primary)]">טוען...</div>
@@ -108,6 +120,19 @@ export default function DashboardPage() {
           נתונים נוספים
         </Button>
       </div>
+
+      {/* Daily Challenge - Compact */}
+      {settings?.show_daily_challenge && challenge && (
+        <div className="mt-4 px-4">
+          <ChallengeCard
+            challenge={challenge}
+            onComplete={handleChallengeComplete}
+            challengeStreak={challengeStreak}
+            xpReward={50}
+            compact
+          />
+        </div>
+      )}
 
       {/* Modals */}
       <WalkingEntryModal

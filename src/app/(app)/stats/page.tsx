@@ -6,6 +6,9 @@ import { useWalking, useWeight, useSettings, useDailyContent } from '@/hooks/use
 import { useGamification } from '@/hooks/useGamification'
 import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WeightEntryModal } from '@/components/weight/WeightEntryModal'
+import { Modal } from '@/components/ui/Modal'
+import { AchievementCard } from '@/components/gamification/AchievementCard'
+import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { WalkingChart } from '@/components/steps/StepsChart'
 import { WeightChart } from '@/components/weight/WeightChart'
 import { BackButton } from '@/components/ui/BackButton'
@@ -22,22 +25,25 @@ import {
   Activity,
   Sparkles,
   Calendar,
-  Edit,
+  Pencil,
+  Trash2,
   Lightbulb,
-  Check
+  Check,
+  X
 } from 'lucide-react'
 import type { Tables } from '@/types/database'
 
 type TabType = 'overview' | 'charts' | 'activity'
 
 export default function StatsPage() {
-  const { records, getTodayRecord, getConsecutiveGoalDays, refetch: refetchRecords } = useWalking()
-  const { weights, getLatestWeight, refetch: refetchWeights } = useWeight()
+  const { records, getTodayRecord, getConsecutiveGoalDays, deleteRecord: deleteWalkingRecord, refetch: refetchRecords } = useWalking()
+  const { weights, getLatestWeight, deleteWeight, refetch: refetchWeights } = useWeight()
   const { settings, loading: settingsLoading } = useSettings()
-  const { tip, challenge, completeChallenge } = useDailyContent()
+  const { tip, challenge, challengeStreak, completeChallenge } = useDailyContent()
   const { 
     gamification, 
     levelInfo, 
+    achievements,
     userAchievements,
     updateStreak,
     incrementStat,
@@ -50,6 +56,9 @@ export default function StatsPage() {
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [editWalkingRecord, setEditWalkingRecord] = useState<Tables<'steps_records'> | undefined>()
   const [editWeightRecord, setEditWeightRecord] = useState<Tables<'weight_records'> | undefined>()
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [showAchievementsModal, setShowAchievementsModal] = useState(false)
   
   const todayRecord = getTodayRecord()
   const latestWeight = getLatestWeight()
@@ -168,6 +177,24 @@ export default function StatsPage() {
     await refetchWeights()
     await updateStreak(new Date().toISOString())
     await incrementStat('weight')
+  }
+
+  const handleDeleteActivity = async (activity: typeof activities[0]) => {
+    setDeleting(true)
+    try {
+      if (activity.type === 'walking') {
+        await deleteWalkingRecord((activity.record as Tables<'steps_records'>).id)
+        await refetchRecords()
+      } else {
+        await deleteWeight((activity.record as Tables<'weight_records'>).id)
+        await refetchWeights()
+      }
+      setDeleteConfirmId(null)
+    } catch (error) {
+      console.error('Error deleting record:', error)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const formatMinutes = (mins: number) => {
@@ -372,7 +399,10 @@ export default function StatsPage() {
 
             {/* Achievements Preview */}
             {userAchievements.length > 0 && (
-              <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-[var(--card)] to-yellow-500/10 border border-amber-500/20 ">
+              <button 
+                onClick={() => setShowAchievementsModal(true)}
+                className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-[var(--card)] to-yellow-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer text-right"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-amber-500/20">
@@ -380,7 +410,7 @@ export default function StatsPage() {
                     </div>
                     <div>
                       <div className="font-bold text-[var(--foreground)]">{userAchievements.length} הישגים</div>
-                      <div className="text-xs text-[var(--muted-foreground)]">המשך כך!</div>
+                      <div className="text-xs text-[var(--muted-foreground)]">לחץ לצפייה</div>
                     </div>
                   </div>
                   <div className="flex -space-x-2 rtl:space-x-reverse">
@@ -395,7 +425,7 @@ export default function StatsPage() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </button>
             )}
 
             {/* Daily Tip - Compact */}
@@ -413,32 +443,16 @@ export default function StatsPage() {
               </div>
             )}
 
-            {/* Daily Challenge - Compact */}
+            {/* Daily Challenge - Enhanced */}
             {settings?.show_daily_challenge && challenge && (
-              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] ">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-[var(--accent)]/20 shrink-0">
-                      <Target className="w-4 h-4 text-[var(--accent)]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-semibold text-sm text-[var(--foreground)] mb-1">אתגר: {challenge.title}</div>
-                      <div className="text-xs text-[var(--muted-foreground)] line-clamp-1">{challenge.description}</div>
-                    </div>
-                  </div>
-                  {challenge.completed ? (
-                    <div className="p-2 rounded-lg bg-emerald-500/20">
-                      <Check className="w-5 h-5 text-emerald-400" />
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={handleChallengeComplete}
-                      className="px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                    >
-                      בוצע
-                    </button>
-                  )}
-                </div>
+              <div className="col-span-2">
+                <ChallengeCard
+                  challenge={challenge}
+                  onComplete={handleChallengeComplete}
+                  challengeStreak={challengeStreak}
+                  xpReward={50}
+                  compact
+                />
               </div>
             )}
           </div>
@@ -494,55 +508,120 @@ export default function StatsPage() {
             <div className="space-y-2">
               {activities.map((activity, index) => {
                 const isWalking = activity.type === 'walking'
+                const isDeleting = deleteConfirmId === activity.id
                 return (
                   <div
                     key={activity.id}
                     className={`
-                      flex items-center justify-between p-4 rounded-2xl
+                      p-4 rounded-2xl
                       bg-[var(--card)] border border-[var(--border)]
                       hover:bg-[var(--card-hover)] transition-all duration-200
                     `}
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-xl ${
-                        isWalking ? 'bg-emerald-500/20' : 'bg-blue-500/20'
-                      }`}>
-                        {isWalking ? (
-                          <Footprints className="w-5 h-5 text-emerald-400" />
-                        ) : (
-                          <Scale className="w-5 h-5 text-blue-400" />
-                        )}
-                      </div>
-                      <div>
-                        <div className={`font-bold text-lg ${
-                          isWalking ? 'text-emerald-400' : 'text-blue-400'
-                        }`}>
-                          {activity.value}
+                    {isDeleting ? (
+                      <div className="animate-fadeIn">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500/30 to-pink-500/30 border border-rose-500/30 animate-pulse">
+                            <Trash2 className="w-5 h-5 text-rose-400" />
+                          </div>
+                          <p className="text-sm text-rose-300 font-medium">
+                            האם אתה בטוח שברצונך למחוק רשומה זו?
+                          </p>
                         </div>
-                        <div className="text-xs text-[var(--muted-foreground)]">
-                          {new Date(activity.date).toLocaleDateString('he-IL', { 
-                            weekday: 'short', 
-                            day: 'numeric', 
-                            month: 'short' 
-                          })}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="group flex-1 relative py-2.5 px-4 rounded-xl overflow-hidden font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            <div className="absolute inset-0 bg-[var(--muted)]/50 group-hover:bg-[var(--muted)] transition-all duration-300" />
+                            <div className="absolute inset-0 border border-white/10 group-hover:border-white/20 rounded-xl transition-all duration-300" />
+                            <span className="relative z-10 flex items-center justify-center gap-2 text-[var(--foreground)]">
+                              <X size={16} />
+                              ביטול
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteActivity(activity)}
+                            disabled={deleting}
+                            className="group flex-1 relative py-2.5 px-4 rounded-xl overflow-hidden font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 bg-[length:200%_100%] group-hover:animate-shimmer" />
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-rose-500/50 transition-opacity duration-300" />
+                            <span className="relative z-10 flex items-center justify-center gap-2 text-white">
+                              <Trash2 size={16} className={deleting ? 'animate-bounce' : ''} />
+                              {deleting ? 'מוחק...' : 'מחק'}
+                            </span>
+                          </button>
                         </div>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (isWalking) {
-                          setEditWalkingRecord(activity.record as Tables<'steps_records'>)
-                          setShowWalkingModal(true)
-                        } else {
-                          setEditWeightRecord(activity.record as Tables<'weight_records'>)
-                          setShowWeightModal(true)
-                        }
-                      }}
-                      className="p-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/50 transition-all"
-                    >
-                      <Edit size={18} />
-                    </button>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2.5 rounded-xl ${
+                            isWalking ? 'bg-emerald-500/20' : 'bg-blue-500/20'
+                          }`}>
+                            {isWalking ? (
+                              <Footprints className="w-5 h-5 text-emerald-400" />
+                            ) : (
+                              <Scale className="w-5 h-5 text-blue-400" />
+                            )}
+                          </div>
+                          <div>
+                            <div className={`font-bold text-lg ${
+                              isWalking ? 'text-emerald-400' : 'text-blue-400'
+                            }`}>
+                              {activity.value}
+                            </div>
+                            <div className="text-xs text-[var(--muted-foreground)]">
+                              {new Date(activity.date).toLocaleDateString('he-IL', { 
+                                weekday: 'short', 
+                                day: 'numeric', 
+                                month: 'short' 
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {/* Edit Button - Cool gradient hover */}
+                          <button
+                            onClick={() => {
+                              if (isWalking) {
+                                setEditWalkingRecord(activity.record as Tables<'steps_records'>)
+                                setShowWalkingModal(true)
+                              } else {
+                                setEditWeightRecord(activity.record as Tables<'weight_records'>)
+                                setShowWeightModal(true)
+                              }
+                            }}
+                            className="group relative p-2.5 rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 active:scale-95"
+                            title="עריכה"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/0 via-blue-500/0 to-cyan-500/0 group-hover:from-violet-500/20 group-hover:via-blue-500/20 group-hover:to-cyan-500/20 transition-all duration-300" />
+                            <div className="absolute inset-0 border border-transparent group-hover:border-violet-400/30 rounded-xl transition-all duration-300" />
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-lg bg-violet-500/20 transition-opacity duration-300" />
+                            <Pencil 
+                              size={17} 
+                              className="relative z-10 text-[var(--muted-foreground)] group-hover:text-violet-300 transition-all duration-300 group-hover:-rotate-12" 
+                            />
+                          </button>
+                          {/* Delete Button - Animated trash */}
+                          <button
+                            onClick={() => setDeleteConfirmId(activity.id)}
+                            className="group relative p-2.5 rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 active:scale-95"
+                            title="מחיקה"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 via-pink-500/0 to-red-500/0 group-hover:from-rose-500/20 group-hover:via-pink-500/20 group-hover:to-red-500/20 transition-all duration-300" />
+                            <div className="absolute inset-0 border border-transparent group-hover:border-rose-400/30 rounded-xl transition-all duration-300" />
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-lg bg-rose-500/20 transition-opacity duration-300" />
+                            <Trash2 
+                              size={17} 
+                              className="relative z-10 text-[var(--muted-foreground)] group-hover:text-rose-400 transition-all duration-300 group-hover:rotate-12" 
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -565,6 +644,10 @@ export default function StatsPage() {
           setEditWalkingRecord(undefined)
           handleWalkingUpdate()
         }}
+        onDelete={() => {
+          setEditWalkingRecord(undefined)
+          refetchRecords()
+        }}
       />
       <WeightEntryModal
         isOpen={showWeightModal}
@@ -578,7 +661,63 @@ export default function StatsPage() {
           setEditWeightRecord(undefined)
           handleWeightUpdate()
         }}
+        onDelete={() => {
+          setEditWeightRecord(undefined)
+          refetchWeights()
+        }}
       />
+
+      {/* Achievements Modal */}
+      <Modal 
+        isOpen={showAchievementsModal} 
+        onClose={() => setShowAchievementsModal(false)}
+        title="ההישגים שלי"
+        size="lg"
+      >
+        <div className="max-h-[60vh] overflow-y-auto space-y-4 pr-1">
+          {/* Unlocked Achievements */}
+          {userAchievements.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                הישגים שהושגו ({userAchievements.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {userAchievements.map((ach) => (
+                  <AchievementCard 
+                    key={ach.id}
+                    achievement={ach}
+                    unlocked={true}
+                    unlockedAt={ach.unlocked_at}
+                    compact
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Locked Achievements */}
+          {achievements.filter(a => !userAchievements.find(ua => ua.id === a.id)).length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                🔒 הישגים נעולים ({achievements.filter(a => !userAchievements.find(ua => ua.id === a.id)).length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {achievements
+                  .filter(a => !userAchievements.find(ua => ua.id === a.id))
+                  .map((ach) => (
+                    <AchievementCard 
+                      key={ach.id}
+                      achievement={ach}
+                      unlocked={false}
+                      compact
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
 
       <style jsx>{`
         @keyframes fadeIn {
