@@ -178,9 +178,17 @@ export function useWalking() {
     return data as WalkingRecord[]
   }
 
-  const { data: records = [], isLoading, mutate: mutateRecords } = useSWR(
+  const { data: records = [], isLoading, error: fetchError, mutate: mutateRecords } = useSWR(
     user ? ['walking', user.id, 30] : null,
-    fetchRecords
+    fetchRecords,
+    {
+      onError: (error) => {
+        console.error('Error fetching walking records:', error)
+        // Don't throw, just log - let the component handle empty state
+      },
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
+    }
   )
 
   const getTodayRecord = () => {
@@ -299,7 +307,7 @@ export function useWalking() {
     return { consecutiveDays, todayGoalMet }
   }
 
-  return { records, loading: isLoading, getTodayRecord, addOrUpdateRecord, deleteRecord, getConsecutiveGoalDays, refetch: mutateRecords }
+  return { records, loading: isLoading, error: fetchError, getTodayRecord, addOrUpdateRecord, deleteRecord, getConsecutiveGoalDays, refetch: mutateRecords }
 }
 
 // Backward compatibility alias
