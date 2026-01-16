@@ -12,6 +12,21 @@ import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { WalkingChart } from '@/components/steps/StepsChart'
 import { WeightChart } from '@/components/weight/WeightChart'
 import { BackButton } from '@/components/ui/BackButton'
+
+type ChallengeWithHistory = {
+  id: string
+  category: string
+  title: string
+  description: string
+  metric_type: string
+  metric_value: number | null
+  rules: string | null
+  difficulty: string
+  is_active: boolean
+  created_at: string
+  completed: boolean
+  historyId?: string
+}
 import { 
   Footprints, 
   Scale, 
@@ -474,7 +489,7 @@ export default function StatsPage() {
             {settings?.show_daily_challenge && (
               <div className="col-span-2 space-y-3">
                 {/* Challenges List */}
-                {challenges.length > 0 && challenges.map((ch) => (
+                {challenges.length > 0 && challenges.map((ch: ChallengeWithHistory) => (
                   <ChallengeCard
                     key={ch.historyId}
                     challenge={ch}

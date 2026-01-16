@@ -13,6 +13,21 @@ import { AchievementPopup, Confetti } from '@/components/gamification'
 import { Button } from '@/components/ui/Button'
 import { BarChart2, Plus } from 'lucide-react'
 
+type ChallengeWithHistory = {
+  id: string
+  category: string
+  title: string
+  description: string
+  metric_type: string
+  metric_value: number | null
+  rules: string | null
+  difficulty: string
+  is_active: boolean
+  created_at: string
+  completed: boolean
+  historyId?: string
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const { getTodayRecord, refetch: refetchRecords } = useWalking()
@@ -151,7 +166,7 @@ export default function DashboardPage() {
       {settings?.show_daily_challenge && (
         <div className="mt-4 px-4 space-y-3">
           {/* Challenges List */}
-          {challenges.length > 0 && challenges.map((ch) => (
+          {challenges.length > 0 && challenges.map((ch: ChallengeWithHistory) => (
             <ChallengeCard
               key={ch.historyId}
               challenge={ch}

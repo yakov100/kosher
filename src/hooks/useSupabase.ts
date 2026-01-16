@@ -651,12 +651,12 @@ export function useDailyContent() {
     if (!data?.challenges) return
 
     // Optimistic update
-    const updatedChallenges = data.challenges.map(c => 
+    const updatedChallenges = data.challenges.map((c: any) => 
       c.historyId === historyId ? { ...c, completed: true } : c
     )
     mutateDaily({ 
       ...data, 
-      challenges: updatedChallenges
+      challenges: updatedChallenges as any
     }, false)
 
     const { error } = await getSupabase()
@@ -733,7 +733,7 @@ export function useDailyContent() {
   const replaceChallenge = async (historyId: string) => {
     if (!user || !data?.challenges) return
 
-    const currentChallenge = data.challenges.find(c => c.historyId === historyId)
+    const currentChallenge = data.challenges.find((c: any) => c.historyId === historyId)
     if (!currentChallenge) return
 
     try {
@@ -746,12 +746,12 @@ export function useDailyContent() {
       const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)]
       
       // Optimistic update - replace in UI immediately
-      const updatedChallenges = data.challenges.map(c => 
+      const updatedChallenges = data.challenges.map((c: any) => 
         c.historyId === historyId 
           ? { ...randomChallenge, completed: false, historyId: c.historyId } 
           : c
       )
-      mutateDaily({ ...data, challenges: updatedChallenges }, false)
+      mutateDaily({ ...data, challenges: updatedChallenges as any }, false)
 
       // Update existing challenge history instead of delete+insert
       const { error: updateError } = await getSupabase()
@@ -778,7 +778,7 @@ export function useDailyContent() {
     if (!user || !data) return
 
     const today = getToday()
-    const currentChallengeIds = data.challenges?.map(c => c.id) || []
+    const currentChallengeIds = data.challenges?.map((c: any) => c.id) || []
 
     try {
       const availableChallenges = await getAvailableChallenges(currentChallengeIds)
@@ -821,15 +821,15 @@ export function useDailyContent() {
         throw new Error('Failed to add new challenge: no data returned')
       }
 
-      const newHistory = insertResult.data as { id: string }
+      const newHistory = (insertResult as any).data as { id: string }
       
       // Update with real historyId
-      const finalChallenges = (data.challenges || []).map(c => 
+      const finalChallenges = (data.challenges || []).map((c: any) => 
         c.historyId?.startsWith('temp-')
           ? { ...c, historyId: newHistory.id }
           : c
       )
-      mutateDaily({ ...data, challenges: finalChallenges }, false)
+      mutateDaily({ ...data, challenges: finalChallenges as any }, false)
 
       // Revalidate to get fresh data
       mutateDaily()
@@ -842,15 +842,15 @@ export function useDailyContent() {
   const removeChallenge = async (historyId: string) => {
     if (!data?.challenges) return
 
-    const challengeToRemove = data.challenges.find(c => c.historyId === historyId)
+    const challengeToRemove = data.challenges.find((c: any) => c.historyId === historyId)
     if (!challengeToRemove) return
 
     try {
       // Optimistic update - remove from UI immediately
-      const updatedChallenges = data.challenges.filter(c => c.historyId !== historyId)
+      const updatedChallenges = data.challenges.filter((c: any) => c.historyId !== historyId)
       const updatedData = { 
         ...data, 
-        challenges: updatedChallenges
+        challenges: updatedChallenges as any
       }
       
       // Update cache without revalidation - this prevents revalidateOnFocus from overwriting
