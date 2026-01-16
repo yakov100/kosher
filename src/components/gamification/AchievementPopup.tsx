@@ -30,6 +30,11 @@ export function AchievementPopup({ achievement, onClose }: AchievementPopupProps
   const [show, setShow] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
+  const handleClose = () => {
+    setShow(false)
+    setTimeout(onClose, 300)
+  }
+
   useEffect(() => {
     if (achievement) {
       setShow(true)
@@ -42,12 +47,7 @@ export function AchievementPopup({ achievement, onClose }: AchievementPopupProps
 
       return () => clearTimeout(timer)
     }
-  }, [achievement])
-
-  const handleClose = () => {
-    setShow(false)
-    setTimeout(onClose, 300)
-  }
+  }, [achievement, handleClose])
 
   if (!achievement) return null
 

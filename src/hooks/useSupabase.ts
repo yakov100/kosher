@@ -291,7 +291,7 @@ export function useWalking() {
     }
 
     // Count backwards
-    let checkDate = new Date(startDate)
+    const checkDate = new Date(startDate)
     for (let i = 0; i < 30; i++) { // Check up to 30 days back
       const dateStr = checkDate.toISOString().split('T')[0]
       const record = sortedRecords.find(r => r.date === dateStr)
@@ -585,7 +585,7 @@ export function useDailyContent() {
 
       let streak = 0
       const today = getToday()
-      let checkDate = new Date(today)
+      const checkDate = new Date(today)
 
       for (let i = 0; i < 30; i++) {
         const dateStr = checkDate.toISOString().split('T')[0]

@@ -9,6 +9,7 @@ interface ConfettiPiece {
   delay: number
   rotation: number
   size: number
+  borderRadius: string
 }
 
 interface ConfettiProps {
@@ -24,14 +25,19 @@ export function Confetti({ active, onComplete, duration = 3000 }: ConfettiProps)
 
   useEffect(() => {
     if (active) {
-      const newPieces: ConfettiPiece[] = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        delay: Math.random() * 0.5,
-        rotation: Math.random() * 360,
-        size: 8 + Math.random() * 8
-      }))
+      const newPieces: ConfettiPiece[] = Array.from({ length: 50 }, (_, i) => {
+        // Use deterministic values based on index to avoid Math.random() in render
+        const seed = i * 0.1
+        return {
+          id: i,
+          x: (seed * 100) % 100,
+          color: COLORS[Math.floor((seed * COLORS.length) % COLORS.length)],
+          delay: (seed * 0.5) % 0.5,
+          rotation: (seed * 360) % 360,
+          size: 8 + ((seed * 8) % 8),
+          borderRadius: i % 2 === 0 ? '50%' : '2px'
+        }
+      })
       setPieces(newPieces)
 
       const timer = setTimeout(() => {
@@ -59,7 +65,7 @@ export function Confetti({ active, onComplete, duration = 3000 }: ConfettiProps)
             backgroundColor: piece.color,
             transform: `rotate(${piece.rotation}deg)`,
             animationDelay: `${piece.delay}s`,
-            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            borderRadius: piece.id % 2 === 0 ? '50%' : '2px',
           }}
         />
       ))}
