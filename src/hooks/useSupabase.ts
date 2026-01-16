@@ -490,21 +490,26 @@ export function useDailyContent() {
     })()
 
     const fetchChallengePromise = (async () => {
-      // Check for existing challenge today
-      const { data: challengeHistory } = await getSupabase()
+      // Check for existing challenges today (can be multiple)
+      // Note: This query will only return challenges that still exist in the database
+      // If a challenge was deleted, it won't appear in the results
+      const { data: challengeHistoryList } = await getSupabase()
         .from('daily_challenge_history')
         .select('*, challenges(*)')
         .eq('user_id', user.id)
         .eq('shown_date', today)
-        .single()
-
-      const challengeHistoryTyped = challengeHistory as { challenges: Challenge; completed: boolean; id: string } | null
-      if (challengeHistoryTyped?.challenges) {
-        return {
-          ...challengeHistoryTyped.challenges,
-          completed: challengeHistoryTyped.completed,
-          historyId: challengeHistoryTyped.id,
-        }
+        .order('created_at', { ascending: false })
+      
+      if (challengeHistoryList && challengeHistoryList.length > 0) {
+        // Filter out any challenges where the challenge data is null (in case of soft deletes)
+        // Return all challenges for today
+        return challengeHistoryList
+          .filter((ch: { challenges: Challenge | null }) => ch.challenges !== null)
+          .map((ch: { challenges: Challenge; completed: boolean; id: string }) => ({
+            ...ch.challenges,
+            completed: ch.completed,
+            historyId: ch.id,
+          }))
       } else {
         // Get challenges shown in last 30 days
         const thirtyDaysAgo = new Date()
@@ -547,15 +552,15 @@ export function useDailyContent() {
 
           const newHistoryTyped = newHistory as { id: string } | null
           if (newHistoryTyped) {
-            return {
+            return [{
               ...randomChallenge,
               completed: false,
               historyId: newHistoryTyped.id,
-            }
+            }]
           }
         }
       }
-      return null
+      return []
     })()
 
     // Calculate challenge streak (consecutive days with completed challenges)
@@ -576,7 +581,7 @@ export function useDailyContent() {
 
       for (let i = 0; i < 30; i++) {
         const dateStr = checkDate.toISOString().split('T')[0]
-        const hasCompleted = completedChallenges.some(c => c.shown_date === dateStr)
+        const hasCompleted = completedChallenges.some((c: { shown_date: string }) => c.shown_date === dateStr)
         
         if (hasCompleted) {
           streak++
@@ -592,29 +597,66 @@ export function useDailyContent() {
       return streak
     }
 
-    const [tip, challenge, challengeStreak] = await Promise.all([
+    const [tip, challenges, challengeStreak] = await Promise.all([
       fetchTipPromise, 
       fetchChallengePromise,
       fetchChallengeStreak()
     ])
-    return { tip, challenge, challengeStreak }
+    return { tip, challenges: challenges || [], challengeStreak }
   }
 
+  const [currentDate, setCurrentDate] = useState(getToday())
+  
+  // Check if date has changed and refresh cache
+  useEffect(() => {
+    const checkDateChange = () => {
+      const today = getToday()
+      setCurrentDate(prevDate => {
+        if (today !== prevDate) {
+          // Date changed - clear old cache entry
+          if (user?.id) {
+            mutate(['dailyContent', user.id, prevDate])
+          }
+          return today
+        }
+        return prevDate
+      })
+    }
+    
+    // Check immediately
+    checkDateChange()
+    
+    // Check every minute to catch date changes (especially at midnight)
+    const interval = setInterval(checkDateChange, 60000)
+    
+    // Also check on window focus
+    window.addEventListener('focus', checkDateChange)
+    
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', checkDateChange)
+    }
+  }, [user?.id])
+
   const { data, isLoading, mutate: mutateDaily } = useSWR(
-    user ? ['dailyContent', user.id, getToday()] : null,
+    user ? ['dailyContent', user.id, currentDate] : null,
     fetchDailyContent,
     {
-      revalidateOnFocus: false, // Don't revalidate on focus as daily content doesn't change during the day
+      revalidateOnFocus: true, // Revalidate on focus to catch date changes
+      revalidateOnMount: true, // Always revalidate on mount
     }
   )
 
-  const completeChallenge = async () => {
-    if (!data?.challenge) return
+  const completeChallenge = async (historyId: string) => {
+    if (!data?.challenges) return
 
     // Optimistic update
+    const updatedChallenges = data.challenges.map(c => 
+      c.historyId === historyId ? { ...c, completed: true } : c
+    )
     mutateDaily({ 
       ...data, 
-      challenge: { ...data.challenge, completed: true } 
+      challenges: updatedChallenges
     }, false)
 
     const { error } = await getSupabase()
@@ -623,7 +665,7 @@ export function useDailyContent() {
         completed: true,
         completed_at: new Date().toISOString(),
       } as never)
-      .eq('id', data.challenge.historyId)
+      .eq('id', historyId)
 
     if (error) {
       mutateDaily() // Revert
@@ -634,12 +676,219 @@ export function useDailyContent() {
     mutateDaily()
   }
 
+  // Helper function to get available challenges
+  const getAvailableChallenges = async (excludeIds: string[]): Promise<Challenge[]> => {
+    if (!user) return []
+
+    // Get challenges shown in last 30 days
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    
+    const { data: recentChallenges } = await getSupabase()
+      .from('daily_challenge_history')
+      .select('challenge_id')
+      .eq('user_id', user.id)
+      .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+
+    const recentChallengeIds = recentChallenges?.map((c: { challenge_id: string }) => c.challenge_id) || []
+    const allExcludeIds = [...recentChallengeIds, ...excludeIds]
+
+    // Get a random challenge not shown recently
+    let query = getSupabase()
+      .from('challenges')
+      .select('*')
+      .eq('is_active', true)
+
+    if (allExcludeIds.length > 0) {
+      allExcludeIds.forEach(id => {
+        query = query.neq('id', id)
+      })
+    }
+
+    const { data: availableChallenges, error: queryError } = await query
+
+    if (queryError) {
+      throw queryError
+    }
+
+    if (availableChallenges && availableChallenges.length > 0) {
+      return availableChallenges as Challenge[]
+    }
+
+    // Fallback: if no new challenges, get any challenge (except excluded ones)
+    let fallbackQuery = getSupabase()
+      .from('challenges')
+      .select('*')
+      .eq('is_active', true)
+      .limit(10)
+
+    excludeIds.forEach(id => {
+      fallbackQuery = fallbackQuery.neq('id', id)
+    })
+
+    const { data: fallbackChallenges } = await fallbackQuery
+    return (fallbackChallenges || []) as Challenge[]
+  }
+
+  const replaceChallenge = async (historyId: string) => {
+    if (!user || !data?.challenges) return
+
+    const currentChallenge = data.challenges.find(c => c.historyId === historyId)
+    if (!currentChallenge) return
+
+    try {
+      const availableChallenges = await getAvailableChallenges([currentChallenge.id])
+      
+      if (availableChallenges.length === 0) {
+        return
+      }
+
+      const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)]
+      
+      // Optimistic update - replace in UI immediately
+      const updatedChallenges = data.challenges.map(c => 
+        c.historyId === historyId 
+          ? { ...randomChallenge, completed: false, historyId: c.historyId } 
+          : c
+      )
+      mutateDaily({ ...data, challenges: updatedChallenges }, false)
+
+      // Update existing challenge history instead of delete+insert
+      const { error: updateError } = await getSupabase()
+        .from('daily_challenge_history')
+        .update({
+          challenge_id: randomChallenge.id,
+        } as never)
+        .eq('id', historyId)
+
+      if (updateError) {
+        mutateDaily() // Revert
+        throw updateError
+      }
+
+      // Revalidate to get fresh data
+      mutateDaily()
+    } catch (error) {
+      mutateDaily() // Revert on error
+      throw error
+    }
+  }
+
+  const addNewChallenge = async () => {
+    if (!user || !data) return
+
+    const today = getToday()
+    const currentChallengeIds = data.challenges?.map(c => c.id) || []
+
+    try {
+      const availableChallenges = await getAvailableChallenges(currentChallengeIds)
+      
+      if (availableChallenges.length === 0) {
+        return
+      }
+
+      const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)]
+
+      // Optimistic update - add to UI immediately
+      const newChallengeWithTempId = {
+        ...randomChallenge,
+        completed: false,
+        historyId: `temp-${Date.now()}`,
+      }
+      mutateDaily({ 
+        ...data, 
+        challenges: [...(data.challenges || []), newChallengeWithTempId] 
+      }, false)
+
+      // Create new challenge history
+      const insertResult = await getSupabase()
+        .from('daily_challenge_history')
+        .insert({
+          user_id: user.id,
+          challenge_id: randomChallenge.id,
+          shown_date: today,
+        } as never)
+        .select()
+        .single()
+
+      if (insertResult.error) {
+        mutateDaily() // Revert
+        throw insertResult.error
+      }
+
+      if (!insertResult.data) {
+        mutateDaily() // Revert
+        throw new Error('Failed to add new challenge: no data returned')
+      }
+
+      const newHistory = insertResult.data as { id: string }
+      
+      // Update with real historyId
+      const finalChallenges = (data.challenges || []).map(c => 
+        c.historyId?.startsWith('temp-')
+          ? { ...c, historyId: newHistory.id }
+          : c
+      )
+      mutateDaily({ ...data, challenges: finalChallenges }, false)
+
+      // Revalidate to get fresh data
+      mutateDaily()
+    } catch (error) {
+      mutateDaily() // Revert on error
+      throw error
+    }
+  }
+
+  const removeChallenge = async (historyId: string) => {
+    if (!data?.challenges) return
+
+    const challengeToRemove = data.challenges.find(c => c.historyId === historyId)
+    if (!challengeToRemove) return
+
+    try {
+      // Optimistic update - remove from UI immediately
+      const updatedChallenges = data.challenges.filter(c => c.historyId !== historyId)
+      const updatedData = { 
+        ...data, 
+        challenges: updatedChallenges
+      }
+      
+      // Update cache without revalidation - this prevents revalidateOnFocus from overwriting
+      await mutateDaily(updatedData, false)
+
+      // Delete from database
+      const { error } = await getSupabase()
+        .from('daily_challenge_history')
+        .delete()
+        .eq('id', historyId)
+
+      if (error) {
+        // Revert on error - revalidate to get fresh data
+        await mutateDaily()
+        throw error
+      }
+
+      // Deletion successful - keep the optimistic update in cache
+      // The cache is already updated with the correct data (without the deleted challenge)
+      // We don't call mutateDaily() here to avoid revalidation that might bring back the challenge
+      // The optimistic update will persist until the next manual revalidation
+    } catch (error) {
+      // Revert on error - revalidate to get fresh data
+      await mutateDaily()
+      throw error
+    }
+  }
+
   return { 
     tip: data?.tip || null, 
-    challenge: data?.challenge || null, 
+    challenges: data?.challenges || [],
+    challenge: data?.challenges?.[0] || null, // Keep for backward compatibility
     challengeStreak: data?.challengeStreak || 0,
     loading: isLoading, 
-    completeChallenge, 
+    completeChallenge,
+    replaceChallenge,
+    addNewChallenge,
+    removeChallenge,
     refetch: mutateDaily 
   }
 }

@@ -29,7 +29,8 @@ import {
   Trash2,
   Lightbulb,
   Check,
-  X
+  X,
+  Plus
 } from 'lucide-react'
 import type { Tables } from '@/types/database'
 
@@ -39,7 +40,7 @@ export default function StatsPage() {
   const { records, getTodayRecord, getConsecutiveGoalDays, deleteRecord: deleteWalkingRecord, refetch: refetchRecords } = useWalking()
   const { weights, getLatestWeight, deleteWeight, refetch: refetchWeights } = useWeight()
   const { settings, loading: settingsLoading } = useSettings()
-  const { tip, challenge, challengeStreak, completeChallenge } = useDailyContent()
+  const { tip, challenge, challenges, challengeStreak, completeChallenge, replaceChallenge, addNewChallenge, removeChallenge } = useDailyContent()
   const { 
     gamification, 
     levelInfo, 
@@ -59,6 +60,7 @@ export default function StatsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showAchievementsModal, setShowAchievementsModal] = useState(false)
+  const [isAddingChallenge, setIsAddingChallenge] = useState(false)
   
   const todayRecord = getTodayRecord()
   const latestWeight = getLatestWeight()
@@ -159,13 +161,38 @@ export default function StatsPage() {
 
   const handleChallengeComplete = async () => {
     try {
-      await completeChallenge()
-      await incrementStat('challenge')
-      await addXP(50)
+      if (challenge?.historyId) {
+        await completeChallenge(challenge.historyId)
+        await incrementStat('challenge')
+        await addXP(50)
+      }
     } catch (error) {
       console.error('Error completing challenge:', error)
     }
   }
+
+  const handleReplaceChallenge = async () => {
+    try {
+      if (challenge?.historyId) {
+        await replaceChallenge(challenge.historyId)
+      }
+    } catch (error) {
+      console.error('Error replacing challenge:', error)
+    }
+  }
+
+  const handleAddNewChallenge = async () => {
+    setIsAddingChallenge(true)
+    try {
+      await addNewChallenge()
+    } catch (error) {
+      console.error('Error adding new challenge:', error)
+    } finally {
+      setIsAddingChallenge(false)
+    }
+  }
+
+
 
   const handleWalkingUpdate = async () => {
     await refetchRecords()
@@ -444,15 +471,73 @@ export default function StatsPage() {
             )}
 
             {/* Daily Challenge - Enhanced */}
-            {settings?.show_daily_challenge && challenge && (
-              <div className="col-span-2">
-                <ChallengeCard
-                  challenge={challenge}
-                  onComplete={handleChallengeComplete}
-                  challengeStreak={challengeStreak}
-                  xpReward={50}
-                  compact
-                />
+            {settings?.show_daily_challenge && (
+              <div className="col-span-2 space-y-3">
+                {/* Challenges List */}
+                {challenges.length > 0 && challenges.map((ch) => (
+                  <ChallengeCard
+                    key={ch.historyId}
+                    challenge={ch}
+                    onComplete={() => {
+                      if (ch.historyId) {
+                        completeChallenge(ch.historyId).then(() => {
+                          incrementStat('challenge')
+                          addXP(50)
+                        }).catch(error => {
+                          console.error('Error completing challenge:', error)
+                        })
+                      }
+                    }}
+                    onReplace={ch.completed ? undefined : () => {
+                      if (ch.historyId) {
+                        replaceChallenge(ch.historyId).catch(error => {
+                          console.error('Error replacing challenge:', error)
+                        })
+                      }
+                    }}
+                    onRemove={() => {
+                      if (ch.historyId) {
+                        removeChallenge(ch.historyId).catch(error => {
+                          console.error('Error removing challenge:', error)
+                        })
+                      }
+                    }}
+                    challengeStreak={challengeStreak}
+                    xpReward={50}
+                    compact
+                  />
+                ))}
+
+                {/* Add Challenge Button - Centered below challenges */}
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={handleAddNewChallenge}
+                    disabled={isAddingChallenge}
+                    aria-label="הוסף אתגר"
+                    title="הוסף אתגר"
+                    className={`
+                      group relative w-12 h-12 rounded-full
+                      overflow-hidden
+                      transition-all duration-300
+                      hover:scale-110 active:scale-95
+                      disabled:opacity-70 disabled:cursor-not-allowed
+                      flex items-center justify-center
+                    `}
+                  >
+                    {/* Button background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] via-[var(--primary)] to-[var(--accent)] bg-[length:200%_100%] group-hover:animate-shimmer" />
+                    
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-[var(--accent)]/50 transition-opacity duration-300" />
+                    
+                    {/* Button content */}
+                    {isAddingChallenge ? (
+                      <div className="relative z-10 w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Plus size={20} className="relative z-10 text-white" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>

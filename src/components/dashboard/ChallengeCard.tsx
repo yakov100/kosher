@@ -12,7 +12,9 @@ import {
   Zap,
   Trophy,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  RefreshCw,
+  X
 } from 'lucide-react'
 import { Confetti } from '@/components/gamification'
 
@@ -33,6 +35,8 @@ interface Challenge {
 interface ChallengeCardProps {
   challenge: Challenge | null
   onComplete: () => void
+  onReplace?: () => void
+  onRemove?: () => void
   challengeStreak?: number
   xpReward?: number
   compact?: boolean
@@ -85,7 +89,9 @@ const difficultyConfig: Record<string, { label: string; color: string; bg: strin
 
 export function ChallengeCard({ 
   challenge, 
-  onComplete, 
+  onComplete,
+  onReplace,
+  onRemove,
   challengeStreak = 0,
   xpReward = 50,
   compact = false 
@@ -203,13 +209,67 @@ export function ChallengeCard({
             </div>
             
             <div className="flex flex-col items-end gap-2">
-              {/* Difficulty Badge */}
-              <span className={`
-                text-xs font-bold px-3 py-1.5 rounded-xl border
-                ${difficulty.bg} ${difficulty.color}
-              `}>
-                {difficulty.label}
-              </span>
+              <div className="flex items-center gap-2">
+                {/* Remove button - for all challenges */}
+                {onRemove && (
+                  <button
+                    onClick={onRemove}
+                    aria-label="הסר אתגר"
+                    title="הסר אתגר"
+                    className={`
+                      w-10 h-10 rounded-full
+                      bg-[var(--card)]/60
+                      border border-[var(--border)]
+                      text-[var(--foreground)]/80
+                      hover:bg-rose-500/20
+                      hover:border-rose-500/50
+                      hover:text-rose-400
+                      transition-all duration-300
+                      hover:scale-110 active:scale-95
+                      flex items-center justify-center
+                      group
+                    `}
+                  >
+                    <X 
+                      size={18} 
+                      className="transition-transform duration-300 group-hover:rotate-90" 
+                    />
+                  </button>
+                )}
+                {/* Replace button - only for incomplete challenges */}
+                {onReplace && !challenge.completed && (
+                  <button
+                    onClick={onReplace}
+                    aria-label="החלף אתגר"
+                    title="החלף אתגר"
+                    className={`
+                      w-10 h-10 rounded-full
+                      bg-[var(--card)]/60
+                      border border-[var(--border)]
+                      text-[var(--foreground)]/80
+                      hover:bg-[var(--card)]/80
+                      hover:border-[var(--accent)]/50
+                      hover:text-[var(--foreground)]
+                      transition-all duration-300
+                      hover:scale-110 active:scale-95
+                      flex items-center justify-center
+                      group
+                    `}
+                  >
+                    <RefreshCw 
+                      size={18} 
+                      className="transition-transform duration-300 group-hover:rotate-90" 
+                    />
+                  </button>
+                )}
+                {/* Difficulty Badge */}
+                <span className={`
+                  text-xs font-bold px-3 py-1.5 rounded-xl border
+                  ${difficulty.bg} ${difficulty.color}
+                `}>
+                  {difficulty.label}
+                </span>
+              </div>
               
               {/* XP Reward */}
               <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-500/20 border border-violet-500/30">
@@ -245,53 +305,57 @@ export function ChallengeCard({
 
           {/* Action Area */}
           {challenge.completed ? (
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/30">
-                  <Trophy size={24} className="text-emerald-400" />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-emerald-500/30">
+                    <Trophy size={24} className="text-emerald-400" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-emerald-300 text-lg">בוצע בהצלחה!</span>
+                    <p className="text-sm text-emerald-400/70">כל הכבוד, קיבלת +{xpReward} XP 🎉</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold text-emerald-300 text-lg">בוצע בהצלחה!</span>
-                  <p className="text-sm text-emerald-400/70">כל הכבוד, קיבלת +{xpReward} XP 🎉</p>
-                </div>
+                <Check size={28} className="text-emerald-400" />
               </div>
-              <Check size={28} className="text-emerald-400" />
             </div>
           ) : (
-            <button
-              onClick={handleComplete}
-              disabled={isCompleting}
-              className={`
-                group relative w-full py-4 px-6 rounded-2xl
-                font-bold text-lg text-white
-                overflow-hidden
-                transition-all duration-300
-                hover:scale-[1.02] active:scale-[0.98]
-                disabled:opacity-70 disabled:cursor-not-allowed
-              `}
-            >
-              {/* Button background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] via-[var(--primary)] to-[var(--accent)] bg-[length:200%_100%] group-hover:animate-shimmer" />
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-[var(--accent)]/50 transition-opacity duration-300" />
-              
-              {/* Button content */}
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                {isCompleting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    מסמן...
-                  </>
-                ) : (
-                  <>
-                    <Check size={22} className="group-hover:scale-110 transition-transform" />
-                    סיימתי את האתגר!
-                    <Sparkles size={18} className="text-amber-300 group-hover:animate-pulse" />
-                  </>
-                )}
-              </span>
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={handleComplete}
+                disabled={isCompleting}
+                className={`
+                  group relative w-full py-4 px-6 rounded-2xl
+                  font-bold text-lg text-white
+                  overflow-hidden
+                  transition-all duration-300
+                  hover:scale-[1.02] active:scale-[0.98]
+                  disabled:opacity-70 disabled:cursor-not-allowed
+                `}
+              >
+                {/* Button background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] via-[var(--primary)] to-[var(--accent)] bg-[length:200%_100%] group-hover:animate-shimmer" />
+                
+                {/* Glow effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-[var(--accent)]/50 transition-opacity duration-300" />
+                
+                {/* Button content */}
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  {isCompleting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      מסמן...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={22} className="group-hover:scale-110 transition-transform" />
+                      סיימתי את האתגר!
+                      <Sparkles size={18} className="text-amber-300 group-hover:animate-pulse" />
+                    </>
+                  )}
+                </span>
+              </button>
+            </div>
           )}
 
           {/* Collapse button for compact mode */}
