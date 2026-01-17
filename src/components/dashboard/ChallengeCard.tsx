@@ -46,44 +46,44 @@ const categoryConfig: Record<string, { icon: typeof Footprints; label: string; g
   walking: { 
     icon: Footprints, 
     label: 'הליכה',
-    gradient: 'from-emerald-500/30 via-teal-500/20 to-green-500/10',
-    color: 'text-emerald-400'
+    gradient: 'from-emerald-200/40 via-teal-200/30 to-green-200/20',
+    color: 'text-emerald-600'
   },
   consistency: { 
     icon: Flame, 
     label: 'עקביות',
-    gradient: 'from-orange-500/30 via-amber-500/20 to-yellow-500/10',
-    color: 'text-orange-400'
+    gradient: 'from-orange-200/40 via-amber-200/30 to-yellow-200/20',
+    color: 'text-orange-600'
   },
   weighing: { 
     icon: Scale, 
     label: 'שקילה',
-    gradient: 'from-blue-500/30 via-cyan-500/20 to-sky-500/10',
-    color: 'text-blue-400'
+    gradient: 'from-blue-200/40 via-cyan-200/30 to-sky-200/20',
+    color: 'text-blue-600'
   },
   lifestyle: { 
     icon: Star, 
     label: 'אורח חיים',
-    gradient: 'from-violet-500/30 via-purple-500/20 to-fuchsia-500/10',
-    color: 'text-violet-400'
+    gradient: 'from-violet-200/40 via-purple-200/30 to-fuchsia-200/20',
+    color: 'text-violet-600'
   },
 }
 
 const difficultyConfig: Record<string, { label: string; color: string; bg: string }> = {
   easy: { 
     label: 'קל', 
-    color: 'text-emerald-300',
-    bg: 'bg-emerald-500/20 border-emerald-500/30'
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-200/40 border-emerald-300/50'
   },
   medium: { 
     label: 'בינוני', 
-    color: 'text-amber-300',
-    bg: 'bg-amber-500/20 border-amber-500/30'
+    color: 'text-amber-600',
+    bg: 'bg-amber-200/40 border-amber-300/50'
   },
   hard: { 
     label: 'מאתגר', 
-    color: 'text-rose-300',
-    bg: 'bg-rose-500/20 border-rose-500/30'
+    color: 'text-rose-600',
+    bg: 'bg-rose-200/40 border-rose-300/50'
   },
 }
 
@@ -145,18 +145,18 @@ export function ChallengeCard({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {challenge.completed ? (
-              <div className="p-2 rounded-lg bg-emerald-500/20">
-                <Check className="w-5 h-5 text-emerald-400" />
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[var(--accent)]">+{xpReward} XP</span>
-                <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-              </div>
-            )}
-          </div>
+            <div className="flex items-center gap-2">
+              {challenge.completed ? (
+                <div className="p-2 rounded-lg bg-emerald-200/40 border border-emerald-300/50">
+                  <Check className="w-5 h-5 text-emerald-600" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[var(--accent)]">+{xpReward} XP</span>
+                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                </div>
+              )}
+            </div>
         </div>
       </button>
     )
@@ -172,7 +172,7 @@ export function ChallengeCard({
           bg-gradient-to-br ${category.gradient}
           border border-[var(--border)]
           transition-all duration-500
-          ${challenge.completed ? 'ring-2 ring-emerald-500/50' : ''}
+          ${challenge.completed ? 'ring-2 ring-emerald-300/60' : ''}
         `}
       >
         {/* Decorative background elements */}
@@ -193,9 +193,9 @@ export function ChallengeCard({
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-bold text-lg text-[var(--foreground)]">אתגר היום</h3>
                   {challengeStreak > 0 && (
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30">
-                      <Flame size={12} className="text-orange-400" />
-                      <span className="text-xs font-bold text-orange-300">{challengeStreak}</span>
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-200/40 border border-orange-300/50">
+                      <Flame size={12} className="text-orange-600" />
+                      <span className="text-xs font-bold text-orange-600">{challengeStreak}</span>
                     </div>
                   )}
                 </div>
@@ -272,9 +272,9 @@ export function ChallengeCard({
               </div>
               
               {/* XP Reward */}
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-500/20 border border-violet-500/30">
-                <Zap size={12} className="text-violet-400" />
-                <span className="text-xs font-bold text-violet-300">+{xpReward} XP</span>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-200/40 border border-violet-300/50">
+                <Zap size={12} className="text-violet-600" />
+                <span className="text-xs font-bold text-violet-600">+{xpReward} XP</span>
               </div>
             </div>
           </div>
@@ -293,8 +293,8 @@ export function ChallengeCard({
           {challenge.rules && (
             <div className="mb-5 p-4 rounded-2xl bg-[var(--card)]/60 backdrop-blur-sm border border-white/10">
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded-lg bg-amber-500/20 mt-0.5">
-                  <Sparkles size={14} className="text-amber-400" />
+                <div className="p-1.5 rounded-lg bg-amber-200/40 border border-amber-300/50 mt-0.5">
+                  <Sparkles size={14} className="text-amber-600" />
                 </div>
                 <p className="text-sm text-[var(--foreground)]/70 font-medium leading-relaxed">
                   {challenge.rules}
@@ -306,17 +306,17 @@ export function ChallengeCard({
           {/* Action Area */}
           {challenge.completed ? (
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-200/40 border border-emerald-300/50">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-emerald-500/30">
-                    <Trophy size={24} className="text-emerald-400" />
+                  <div className="p-2 rounded-xl bg-emerald-200/50 border border-emerald-300/50">
+                    <Trophy size={24} className="text-emerald-600" />
                   </div>
                   <div>
-                    <span className="font-bold text-emerald-300 text-lg">בוצע בהצלחה!</span>
-                    <p className="text-sm text-emerald-400/70">כל הכבוד, קיבלת +{xpReward} XP 🎉</p>
+                    <span className="font-bold text-emerald-600 text-lg">בוצע בהצלחה!</span>
+                    <p className="text-sm text-emerald-600/80">כל הכבוד, קיבלת +{xpReward} XP 🎉</p>
                   </div>
                 </div>
-                <Check size={28} className="text-emerald-400" />
+                <Check size={28} className="text-emerald-600" />
               </div>
             </div>
           ) : (
@@ -350,7 +350,7 @@ export function ChallengeCard({
                     <>
                       <Check size={22} className="group-hover:scale-110 transition-transform" />
                       סיימתי את האתגר!
-                      <Sparkles size={18} className="text-amber-300 group-hover:animate-pulse" />
+                      <Sparkles size={18} className="text-amber-500 group-hover:animate-pulse" />
                     </>
                   )}
                 </span>
