@@ -10,9 +10,10 @@ interface ModalProps {
   title?: string
   children: ReactNode
   size?: 'sm' | 'md' | 'lg'
+  icon?: ReactNode
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', icon }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -47,34 +48,22 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       {/* Modal */}
       <div
         className={cn(
-          'relative w-full rounded-3xl shadow-2xl p-8 fade-in',
-          'bg-gradient-to-br from-slate-800/95 via-slate-800/90 to-slate-900/95',
-          'border border-white/10',
-          'backdrop-blur-xl',
+          'relative w-full rounded-2xl shadow-2xl p-6 fade-in',
+          'bg-gradient-to-br from-white via-slate-50/30 to-white',
+          'border border-slate-200',
           sizes[size]
         )}
       >
-        {/* Top gradient accent line */}
-        <div className="absolute top-0 left-8 right-8 h-1 rounded-full bg-gradient-to-r from-emerald-400 via-violet-400 to-blue-400" />
-        
-        {/* Corner decorations */}
-        <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-violet-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute bottom-4 left-4 w-20 h-20 bg-gradient-to-tr from-emerald-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
         
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between mb-8 relative">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 shadow-lg shadow-violet-500/10">
-                <Sparkles className="w-5 h-5 text-violet-300" />
-              </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                {title}
-              </h2>
-            </div>
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200/60">
+            <h2 className="text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              {title}
+            </h2>
             <button
               onClick={onClose}
-              className="p-2.5 rounded-xl text-white/40 hover:text-white bg-white/5 hover:bg-white/15 border border-transparent hover:border-white/20 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all hover:scale-105 active:scale-95"
             >
               <X size={20} />
             </button>

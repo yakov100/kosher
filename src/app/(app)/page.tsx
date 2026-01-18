@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { formatHebrewDate } from '@/lib/utils'
+import { formatHebrewDate, getToday } from '@/lib/utils'
 import { useWalking, useWeight, useSettings, useDailyContent } from '@/hooks/useSupabase'
 import { useGamification } from '@/hooks/useGamification'
 import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WeightEntryModal } from '@/components/weight/WeightEntryModal'
 import { CircleDashboard } from '@/components/dashboard/CircleDashboard'
+import { HistoryModal } from '@/components/dashboard/HistoryModal'
 import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { AchievementPopup, Confetti } from '@/components/gamification'
 import { Button } from '@/components/ui/Button'
@@ -30,8 +31,8 @@ type ChallengeWithHistory = {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { getTodayRecord, refetch: refetchRecords } = useWalking()
-  const { getLatestWeight, refetch: refetchWeights } = useWeight()
+  const { records: walkingRecords, getTodayRecord, refetch: refetchRecords, addOrUpdateRecord, deleteRecord: deleteWalkingRecord } = useWalking()
+  const { weights: weightRecords, getLatestWeight, refetch: refetchWeights, deleteWeight: deleteWeightRecord } = useWeight()
   const { settings, loading: settingsLoading } = useSettings()
   const { 
     gamification, 
@@ -49,6 +50,10 @@ export default function DashboardPage() {
   const [showGoalConfetti, setShowGoalConfetti] = useState(false)
   const [showWalkingModal, setShowWalkingModal] = useState(false)
   const [showWeightModal, setShowWeightModal] = useState(false)
+  const [showWalkingHistory, setShowWalkingHistory] = useState(false)
+  const [showWeightHistory, setShowWeightHistory] = useState(false)
+  const [editingWalking, setEditingWalking] = useState<typeof walkingRecords[0] | null>(null)
+  const [editingWeight, setEditingWeight] = useState<typeof weightRecords[0] | null>(null)
   const [isAddingChallenge, setIsAddingChallenge] = useState(false)
   
   const todayRecord = getTodayRecord()
@@ -64,6 +69,24 @@ export default function DashboardPage() {
     if (updatedTodayRecord && updatedTodayRecord.minutes >= dailyGoal) {
       setShowGoalConfetti(true)
       await addXP(25)
+    }
+  }
+
+  const handleTimerStop = async (elapsedMinutes: number) => {
+    try {
+      const today = getToday()
+      // Refetch to get the latest record for today (in case it changed)
+      await refetchRecords()
+      const latestTodayRecord = getTodayRecord()
+      const currentMinutes = latestTodayRecord?.minutes || 0
+      const newTotalMinutes = currentMinutes + elapsedMinutes
+
+      await addOrUpdateRecord(today, newTotalMinutes)
+      await handleWalkingUpdate()
+    } catch (error: unknown) {
+      // Properly log Supabase errors which don't serialize with console.error
+      const err = error as { message?: string; code?: string; details?: string }
+      console.error('Error saving timer data:', err?.message || err?.code || JSON.stringify(error))
     }
   }
 
@@ -126,13 +149,13 @@ export default function DashboardPage() {
 
       {/* Date Header */}
       <header className="py-8 text-center">
-        <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-2">{formatHebrewDate(today)}</h1>
-        <p className="text-sm font-medium text-[var(--muted-foreground)]">היום</p>
+        <h1 className="text-2xl font-semibold text-white mb-2">{formatHebrewDate(today)}</h1>
+        <p className="text-sm font-medium text-white/80">היום</p>
       </header>
 
       {/* Main Circle Dashboard */}
       <div className="flex-1 flex flex-col items-center justify-center">
-        <CircleDashboard 
+        <CircleDashboard
           walking={{
             target: dailyGoal,
             current: todayRecord?.minutes || 0
@@ -144,8 +167,11 @@ export default function DashboardPage() {
             level: levelInfo.level,
             streak: gamification?.current_streak || 0
           }}
-          onWalkingClick={() => setShowWalkingModal(true)}
-          onWeightClick={() => setShowWeightModal(true)}
+          onWalkingCircleClick={() => setShowWalkingHistory(true)}
+          onWalkingAddClick={() => setShowWalkingModal(true)}
+          onWeightCircleClick={() => setShowWeightHistory(true)}
+          onWeightAddClick={() => setShowWeightModal(true)}
+          onTimerStop={handleTimerStop}
         />
       </div>
 
@@ -237,18 +263,68 @@ export default function DashboardPage() {
       {/* Modals */}
       <WalkingEntryModal
         isOpen={showWalkingModal}
-        onClose={() => setShowWalkingModal(false)}
+        onClose={() => {
+          setShowWalkingModal(false)
+          setEditingWalking(null)
+        }}
         onSuccess={() => {
           setShowWalkingModal(false)
+          setEditingWalking(null)
           handleWalkingUpdate()
         }}
+        existingRecord={editingWalking ?? undefined}
       />
       <WeightEntryModal
         isOpen={showWeightModal}
-        onClose={() => setShowWeightModal(false)}
+        onClose={() => {
+          setShowWeightModal(false)
+          setEditingWeight(null)
+        }}
         onSuccess={() => {
           setShowWeightModal(false)
+          setEditingWeight(null)
           handleWeightUpdate()
+        }}
+        existingRecord={editingWeight ?? undefined}
+      />
+
+      {/* History Modals */}
+      <HistoryModal
+        isOpen={showWalkingHistory}
+        onClose={() => setShowWalkingHistory(false)}
+        type="walking"
+        walkingRecords={walkingRecords}
+        onEditWalking={(record) => {
+          setEditingWalking(record)
+          setShowWalkingHistory(false)
+          setShowWalkingModal(true)
+        }}
+        onDeleteWalking={async (id) => {
+          await deleteWalkingRecord(id)
+          await refetchRecords()
+        }}
+        onAddNew={() => {
+          setShowWalkingHistory(false)
+          setShowWalkingModal(true)
+        }}
+      />
+      <HistoryModal
+        isOpen={showWeightHistory}
+        onClose={() => setShowWeightHistory(false)}
+        type="weight"
+        weightRecords={weightRecords}
+        onEditWeight={(record) => {
+          setEditingWeight(record)
+          setShowWeightHistory(false)
+          setShowWeightModal(true)
+        }}
+        onDeleteWeight={async (id) => {
+          await deleteWeightRecord(id)
+          await refetchWeights()
+        }}
+        onAddNew={() => {
+          setShowWeightHistory(false)
+          setShowWeightModal(true)
         }}
       />
     </div>

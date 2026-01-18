@@ -5,7 +5,7 @@ import { Settings } from 'lucide-react'
 
 export function Navigation() {
   return (
-    <nav className="fixed bottom-6 left-6 z-40">
+    <nav className="fixed bottom-6 left-6 z-40 flex flex-col gap-3">
       <Link
         href="/settings"
         className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-lg hover:bg-[var(--card-hover)] transition-all hover:scale-110"

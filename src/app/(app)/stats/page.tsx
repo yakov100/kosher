@@ -12,6 +12,7 @@ import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { WalkingChart } from '@/components/steps/StepsChart'
 import { WeightChart } from '@/components/weight/WeightChart'
 import { BackButton } from '@/components/ui/BackButton'
+import { CircleMetric } from '@/components/dashboard/CircleMetric'
 
 type ChallengeWithHistory = {
   id: string
@@ -269,11 +270,11 @@ export default function StatsPage() {
         {/* Header */}
         <header className="py-3 flex items-center gap-3">
           <BackButton />
-          <h1 className="text-xl font-bold text-[var(--foreground)]">נתונים</h1>
+          <h1 className="text-xl font-bold text-white">נתונים</h1>
         </header>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 p-1 bg-[var(--card)] rounded-2xl">
+        <div className="flex gap-2 p-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-md border border-white/20">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -282,8 +283,8 @@ export default function StatsPage() {
               flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl
               font-semibold text-sm transition-all duration-300
               ${activeTab === tab.id 
-                ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-lg shadow-[var(--primary)]/30' 
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card)]'
+                ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-md shadow-emerald-400/20 scale-[1.02]' 
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
               }
             `}
           >
@@ -298,112 +299,77 @@ export default function StatsPage() {
       <div>
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-4 animate-fadeIn">
-          {/* Bento Grid - Main Stats */}
+        <div className="space-y-6 animate-fadeIn">
+          {/* Circle Metrics - Like Dashboard */}
+          <div className="flex flex-col items-center justify-center py-6">
+            {/* Large Circle - Walking */}
+            <div className="relative z-0 mb-4">
+              <CircleMetric
+                size="large"
+                icon={<Footprints className="w-7 h-7" />}
+                value={walkingStats.weeklyAvg}
+                label="ממוצע השבוע"
+                sublabel="דקות ליום"
+                progress={Math.min((walkingStats.weeklyAvg / dailyGoal) * 100, 100)}
+                trend={walkingStats.weeklyTrend}
+                bgGradient="from-emerald-50 to-teal-50"
+              />
+            </div>
+
+            {/* Bottom Row - Weight and Streak */}
+            <div className="flex items-center justify-center gap-6 -mt-8 relative z-10">
+              {/* Weight Circle */}
+              <CircleMetric
+                size="medium"
+                icon={<Scale className="w-5 h-5" />}
+                value={weightStats?.latest || '--'}
+                label="ק״ג אחרון"
+                sublabel={
+                  weightStats?.change !== 0 && weightStats?.change !== undefined
+                    ? `${weightStats.change > 0 ? '+' : ''}${weightStats.change} מהקודם`
+                    : undefined
+                }
+                bgGradient="from-blue-50 to-cyan-50"
+              />
+
+              {/* Streak Circle */}
+              <CircleMetric
+                size="small"
+                icon={<Flame className="w-4 h-4" />}
+                value={gamification?.current_streak || 0}
+                label="ימים ברצף"
+                sublabel={consecutiveGoalDays > 0 ? `${consecutiveGoalDays} ביעד` : undefined}
+                bgGradient="from-orange-50 to-amber-50"
+              />
+            </div>
+          </div>
+
+          {/* Cards Grid - Simplified */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Walking Card - Large */}
-            <div className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-[var(--card)] to-teal-500/10 border border-emerald-500/20 ">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/20">
-                    <Footprints className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <span className="font-semibold text-[var(--foreground)]">הליכה השבוע</span>
-                </div>
-                {walkingStats.weeklyTrend !== 0 && (
-                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold ${
-                    walkingStats.weeklyTrend > 0 
-                      ? 'bg-emerald-500/20 text-emerald-400' 
-                      : 'bg-red-500/20 text-red-400'
-                  }`}>
-                    {walkingStats.weeklyTrend > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    {walkingStats.weeklyTrend > 0 ? '+' : ''}{walkingStats.weeklyTrend}%
-                  </div>
-                )}
-              </div>
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="text-4xl font-black text-emerald-400 mb-1">
-                    {walkingStats.weeklyAvg}
-                    <span className="text-lg font-semibold text-emerald-400/70 mr-1">דק׳</span>
-                  </div>
-                  <div className="text-sm text-[var(--muted-foreground)]">ממוצע יומי</div>
-                </div>
-                <div className="flex gap-1">
-                  {[...Array(7)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-3 h-8 rounded-full transition-all ${
-                        i < walkingStats.goalDaysThisWeek 
-                          ? 'bg-gradient-to-t from-emerald-500 to-teal-400' 
-                          : 'bg-[var(--muted)]/50'
-                      }`}
-                      style={{ height: `${20 + (i < walkingStats.goalDaysThisWeek ? 12 : 0)}px` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Weight Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 via-[var(--card)] to-cyan-500/10 border border-blue-500/20 ">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-blue-500/20">
-                  <Scale className="w-4 h-4 text-blue-400" />
-                </div>
-                <span className="text-sm font-semibold text-[var(--foreground)]">משקל</span>
-              </div>
-              <div className="text-3xl font-black text-blue-400 mb-1">
-                {weightStats?.latest || '--'}
-                <span className="text-sm font-semibold text-blue-400/70 mr-1">ק״ג</span>
-              </div>
-              {weightStats?.change !== 0 && weightStats?.change !== undefined && (
-                <div className={`text-xs font-semibold ${weightStats.change < 0 ? 'text-emerald-400' : 'text-orange-400'}`}>
-                  {weightStats.change > 0 ? '+' : ''}{weightStats.change} מהמדידה הקודמת
-                </div>
-              )}
-            </div>
-
-            {/* Streak Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/20 via-[var(--card)] to-amber-500/10 border border-orange-500/20 ">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-orange-500/20">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                </div>
-                <span className="text-sm font-semibold text-[var(--foreground)]">רצף</span>
-              </div>
-              <div className="text-3xl font-black text-orange-400 mb-1">
-                {gamification?.current_streak || 0}
-                <span className="text-sm font-semibold text-orange-400/70 mr-1">ימים</span>
-              </div>
-              <div className="text-xs text-[var(--muted-foreground)]">
-                {consecutiveGoalDays > 0 ? `${consecutiveGoalDays} ימים ביעד 🔥` : 'התחל היום!'}
-              </div>
-            </div>
 
             {/* Level Progress Card */}
-            <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/20 via-[var(--card)] to-purple-500/10 border border-violet-500/20 ">
-              <div className="flex items-center justify-between mb-3">
+            <div className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-                      <span className="text-lg font-black text-white">{levelInfo.level}</span>
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-md">
+                      <span className="text-xl font-black text-white">{levelInfo.level}</span>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-[var(--card)] border border-violet-500/30">
-                      <Zap size={10} className="text-violet-400" />
+                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-white border border-violet-200">
+                      <Zap size={12} className="text-violet-500" />
                     </div>
                   </div>
                   <div>
-                    <div className="font-bold text-[var(--foreground)]">{levelTitle}</div>
-                    <div className="text-xs text-[var(--muted-foreground)]">{gamification?.total_xp || 0} XP</div>
+                    <div className="font-bold text-slate-800 text-lg">{levelTitle}</div>
+                    <div className="text-sm text-slate-600">{gamification?.total_xp || 0} XP</div>
                   </div>
                 </div>
                 <div className="text-left">
-                  <div className="text-xs text-[var(--muted-foreground)]">לרמה הבאה</div>
-                  <div className="text-sm font-bold text-violet-400">{levelInfo.nextLevelXP - levelInfo.currentLevelXP} XP</div>
+                  <div className="text-xs text-slate-500">לרמה הבאה</div>
+                  <div className="text-base font-bold text-slate-800">{levelInfo.nextLevelXP - levelInfo.currentLevelXP} XP</div>
                 </div>
               </div>
-              <div className="h-2 bg-[var(--muted)]/50 rounded-full overflow-hidden">
+              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-500"
                   style={{ width: `${levelInfo.progress}%` }}
@@ -412,30 +378,30 @@ export default function StatsPage() {
             </div>
 
             {/* Goal Days Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-[var(--card)] to-sky-500/10 border border-cyan-500/20 ">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-100">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-cyan-500/20">
-                  <Target className="w-4 h-4 text-cyan-400" />
+                <div className="p-2 rounded-lg bg-cyan-100">
+                  <Target className="w-4 h-4 text-cyan-600" />
                 </div>
-                <span className="text-sm font-semibold text-[var(--foreground)]">ימי יעד</span>
+                <span className="text-sm font-semibold text-slate-800">ימי יעד</span>
               </div>
-              <div className="text-3xl font-black text-cyan-400">
+              <div className="text-3xl font-black text-slate-800">
                 {walkingStats.goalDaysThisWeek}
-                <span className="text-lg font-semibold text-cyan-400/70">/7</span>
+                <span className="text-lg font-semibold text-slate-600">/7</span>
               </div>
             </div>
 
             {/* Monthly Total Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-500/20 via-[var(--card)] to-rose-500/10 border border-pink-500/20 ">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-pink-500/20">
-                  <Calendar className="w-4 h-4 text-pink-400" />
+                <div className="p-2 rounded-lg bg-pink-100">
+                  <Calendar className="w-4 h-4 text-pink-600" />
                 </div>
-                <span className="text-sm font-semibold text-[var(--foreground)]">החודש</span>
+                <span className="text-sm font-semibold text-slate-800">החודש</span>
               </div>
-              <div className="text-3xl font-black text-pink-400">
+              <div className="text-3xl font-black text-slate-800">
                 {formatMinutes(walkingStats.monthlyTotal)}
-                <span className="text-sm font-semibold text-pink-400/70 mr-1">דק׳</span>
+                <span className="text-sm font-semibold text-slate-600 mr-1">דק׳</span>
               </div>
             </div>
 
@@ -443,23 +409,23 @@ export default function StatsPage() {
             {userAchievements.length > 0 && (
               <button 
                 onClick={() => setShowAchievementsModal(true)}
-                className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 via-[var(--card)] to-yellow-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer text-right"
+                className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-100 hover:border-amber-200 transition-all cursor-pointer text-right hover:scale-[1.01]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-amber-500/20">
-                      <Trophy className="w-5 h-5 text-amber-400" />
+                    <div className="p-2.5 rounded-xl bg-amber-100">
+                      <Trophy className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <div className="font-bold text-[var(--foreground)]">{userAchievements.length} הישגים</div>
-                      <div className="text-xs text-[var(--muted-foreground)]">לחץ לצפייה</div>
+                      <div className="font-bold text-slate-800">{userAchievements.length} הישגים</div>
+                      <div className="text-xs text-slate-600">לחץ לצפייה</div>
                     </div>
                   </div>
                   <div className="flex -space-x-2 rtl:space-x-reverse">
                     {userAchievements.slice(0, 5).map((ach, i) => (
                       <div 
                         key={ach.id}
-                        className="w-10 h-10 rounded-full bg-amber-500/20 border-2 border-[var(--card)] flex items-center justify-center text-lg"
+                        className="w-10 h-10 rounded-full bg-white border-2 border-amber-100 flex items-center justify-center text-lg"
                         style={{ zIndex: 5 - i }}
                       >
                         {ach.icon}
@@ -472,14 +438,14 @@ export default function StatsPage() {
 
             {/* Daily Tip - Compact */}
             {settings?.show_daily_tip && tip && (
-              <div className="col-span-2 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] ">
+              <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50 border border-slate-200">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-[var(--primary)]/20 shrink-0">
-                    <Lightbulb className="w-4 h-4 text-[var(--primary)]" />
+                  <div className="p-2 rounded-lg bg-emerald-100 shrink-0">
+                    <Lightbulb className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-semibold text-sm text-[var(--foreground)] mb-1">{tip.title}</div>
-                    <div className="text-xs text-[var(--muted-foreground)] line-clamp-2">{tip.body}</div>
+                    <div className="font-semibold text-sm text-slate-800 mb-1">{tip.title}</div>
+                    <div className="text-xs text-slate-600 line-clamp-2">{tip.body}</div>
                   </div>
                 </div>
               </div>
@@ -563,14 +529,14 @@ export default function StatsPage() {
       {activeTab === 'charts' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Walking Chart */}
-          <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] ">
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-xl bg-emerald-500/20">
-                <Footprints className="w-5 h-5 text-emerald-400" />
+              <div className="p-2.5 rounded-xl bg-emerald-100">
+                <Footprints className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-bold text-[var(--foreground)]">הליכה</h3>
-                <p className="text-xs text-[var(--muted-foreground)]">7 ימים אחרונים</p>
+                <h3 className="font-bold text-slate-800">הליכה</h3>
+                <p className="text-xs text-slate-600">7 ימים אחרונים</p>
               </div>
             </div>
             <WalkingChart data={walkingChartData} goal={dailyGoal} />
@@ -578,14 +544,14 @@ export default function StatsPage() {
 
           {/* Weight Chart */}
           {weightChartData.length > 0 && (
-            <div className="p-5 rounded-3xl bg-[var(--card)] border border-[var(--border)] ">
+            <div className="p-5 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 rounded-xl bg-blue-500/20">
-                  <Scale className="w-5 h-5 text-blue-400" />
+                <div className="p-2.5 rounded-xl bg-blue-100">
+                  <Scale className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[var(--foreground)]">משקל</h3>
-                  <p className="text-xs text-[var(--muted-foreground)]">30 ימים אחרונים</p>
+                  <h3 className="font-bold text-slate-800">משקל</h3>
+                  <p className="text-xs text-slate-600">30 ימים אחרונים</p>
                 </div>
               </div>
               <WeightChart data={weightChartData} />
@@ -598,9 +564,9 @@ export default function StatsPage() {
       {activeTab === 'activity' && (
         <div className="animate-fadeIn">
           {activities.length === 0 ? (
-            <div className="text-center py-16 rounded-3xl bg-[var(--card)] border border-[var(--border)]">
+            <div className="text-center py-16 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-50 border border-slate-200">
               <div className="text-5xl mb-4">🚀</div>
-              <div className="text-[var(--muted-foreground)] font-medium">
+              <div className="text-slate-600 font-medium">
                 אין פעילות עדיין. התחל להזין נתונים!
               </div>
             </div>
@@ -614,18 +580,18 @@ export default function StatsPage() {
                     key={activity.id}
                     className={`
                       p-4 rounded-2xl
-                      bg-[var(--card)] border border-[var(--border)]
-                      hover:bg-[var(--card-hover)] transition-all duration-200
+                      bg-gradient-to-br from-slate-50 to-white border border-slate-200
+                      hover:border-slate-300 transition-all duration-200
                     `}
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
                     {isDeleting ? (
                       <div className="animate-fadeIn">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500/30 to-pink-500/30 border border-rose-500/30 animate-pulse">
-                            <Trash2 className="w-5 h-5 text-rose-400" />
+                          <div className="p-2.5 rounded-xl bg-rose-100 border border-rose-200 animate-pulse">
+                            <Trash2 className="w-5 h-5 text-rose-600" />
                           </div>
-                          <p className="text-sm text-rose-300 font-medium">
+                          <p className="text-sm text-slate-700 font-medium">
                             האם אתה בטוח שברצונך למחוק רשומה זו?
                           </p>
                         </div>
@@ -634,9 +600,9 @@ export default function StatsPage() {
                             onClick={() => setDeleteConfirmId(null)}
                             className="group flex-1 relative py-2.5 px-4 rounded-xl overflow-hidden font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                           >
-                            <div className="absolute inset-0 bg-[var(--muted)]/50 group-hover:bg-[var(--muted)] transition-all duration-300" />
-                            <div className="absolute inset-0 border border-white/10 group-hover:border-white/20 rounded-xl transition-all duration-300" />
-                            <span className="relative z-10 flex items-center justify-center gap-2 text-[var(--foreground)]">
+                            <div className="absolute inset-0 bg-slate-100 group-hover:bg-slate-200 transition-all duration-300" />
+                            <div className="absolute inset-0 border border-slate-200 group-hover:border-slate-300 rounded-xl transition-all duration-300" />
+                            <span className="relative z-10 flex items-center justify-center gap-2 text-slate-700">
                               <X size={16} />
                               ביטול
                             </span>
@@ -657,23 +623,21 @@ export default function StatsPage() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3">
                           <div className={`p-2.5 rounded-xl ${
-                            isWalking ? 'bg-emerald-500/20' : 'bg-blue-500/20'
+                            isWalking ? 'bg-emerald-100' : 'bg-blue-100'
                           }`}>
                             {isWalking ? (
-                              <Footprints className="w-5 h-5 text-emerald-400" />
+                              <Footprints className="w-5 h-5 text-emerald-600" />
                             ) : (
-                              <Scale className="w-5 h-5 text-blue-400" />
+                              <Scale className="w-5 h-5 text-blue-600" />
                             )}
                           </div>
                           <div>
-                            <div className={`font-bold text-lg ${
-                              isWalking ? 'text-emerald-400' : 'text-blue-400'
-                            }`}>
+                            <div className="font-bold text-lg text-slate-800">
                               {activity.value}
                             </div>
-                            <div className="text-xs text-[var(--muted-foreground)]">
+                            <div className="text-xs text-slate-600">
                               {new Date(activity.date).toLocaleDateString('he-IL', { 
                                 weekday: 'short', 
                                 day: 'numeric', 
@@ -702,7 +666,7 @@ export default function StatsPage() {
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-lg bg-violet-500/20 transition-opacity duration-300" />
                             <Pencil 
                               size={17} 
-                              className="relative z-10 text-[var(--muted-foreground)] group-hover:text-violet-300 transition-all duration-300 group-hover:-rotate-12" 
+                              className="relative z-10 text-slate-500 group-hover:text-violet-500 transition-all duration-300 group-hover:-rotate-12" 
                             />
                           </button>
                           {/* Delete Button - Animated trash */}
@@ -716,7 +680,7 @@ export default function StatsPage() {
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-lg bg-rose-500/20 transition-opacity duration-300" />
                             <Trash2 
                               size={17} 
-                              className="relative z-10 text-[var(--muted-foreground)] group-hover:text-rose-400 transition-all duration-300 group-hover:rotate-12" 
+                              className="relative z-10 text-slate-500 group-hover:text-rose-500 transition-all duration-300 group-hover:rotate-12" 
                             />
                           </button>
                         </div>

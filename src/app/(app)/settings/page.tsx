@@ -16,11 +16,11 @@ function ToggleSwitch({ checked, onChange, label, description }: {
   description?: string
 }) {
   return (
-    <label className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[var(--muted)]/40 to-[var(--muted)]/20 cursor-pointer group hover:from-[var(--muted)]/60 hover:to-[var(--muted)]/40 transition-all duration-300">
+    <label className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-white cursor-pointer group hover:from-slate-100 hover:to-slate-50 hover:scale-[1.01] transition-all duration-300">
       <div className="flex-1">
-        <span className="text-[var(--foreground)] font-medium">{label}</span>
+        <span className="text-slate-800 font-medium">{label}</span>
         {description && (
-          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{description}</p>
+          <p className="text-xs text-slate-600 mt-0.5">{description}</p>
         )}
       </div>
       <div className="relative">
@@ -32,8 +32,8 @@ function ToggleSwitch({ checked, onChange, label, description }: {
         />
         <div className={`w-14 h-8 rounded-full transition-all duration-300 ${
           checked 
-            ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/30' 
-            : 'bg-[var(--muted)]'
+            ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-md shadow-emerald-400/20' 
+            : 'bg-slate-200'
         }`}>
           <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
             checked ? 'right-1' : 'right-7'
@@ -61,16 +61,16 @@ function SectionCard({
   className?: string
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--card)] to-[var(--card)]/80 border border-[var(--border)]/50 p-5 ${className}`}>
+    <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--card)] to-[var(--card)]/95 border border-[var(--border)]/30 p-5 ${className}`}>
       {/* Decorative gradient blob */}
-      <div className={`absolute -top-12 -left-12 w-32 h-32 ${iconBg} rounded-full blur-3xl opacity-20`} />
+      <div className={`absolute -top-12 -left-12 w-32 h-32 ${iconBg} rounded-full blur-3xl opacity-15`} />
       
       <div className="relative">
         <div className="flex items-center gap-3 mb-5">
-          <div className={`p-2.5 rounded-2xl ${iconBg} ${iconColor} shadow-lg`}>
+          <div className={`p-2.5 rounded-2xl ${iconBg} ${iconColor} shadow-md`}>
             <Icon size={22} />
           </div>
-          <h2 className="font-bold text-lg text-[var(--foreground)]">{title}</h2>
+          <h2 className="font-bold text-lg text-slate-800">{title}</h2>
         </div>
         {children}
       </div>
@@ -174,7 +174,7 @@ export default function SettingsPage() {
       >
         <div className="space-y-5">
           {/* Minutes label */}
-          <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+          <div className="flex items-center gap-2 text-sm text-slate-600">
             <Timer className="w-4 h-4" />
             <span>כמה דקות ביום?</span>
           </div>
@@ -182,10 +182,10 @@ export default function SettingsPage() {
           {/* Visual Goal Display */}
           <div className="flex items-center justify-center py-4">
             <div className="relative">
-              <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-emerald-600">
+              <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-500 to-emerald-600">
                 {dailyGoal}
               </div>
-              <span className="absolute -bottom-1 right-0 text-lg font-medium text-[var(--muted-foreground)]">דקות</span>
+              <span className="absolute -bottom-1 right-0 text-lg font-medium text-slate-600">דקות</span>
             </div>
           </div>
 
@@ -198,8 +198,8 @@ export default function SettingsPage() {
                 onClick={() => setDailyGoal(num.toString())}
                 className={`relative py-3 rounded-2xl text-sm font-bold transition-all duration-300 overflow-hidden ${
                   dailyGoal === num.toString()
-                    ? 'text-white shadow-lg shadow-emerald-500/30 scale-105'
-                    : 'bg-[var(--muted)]/60 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:scale-102'
+                    ? 'text-white shadow-md shadow-emerald-400/20 scale-105'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:scale-102'
                 }`}
               >
                 {dailyGoal === num.toString() && (
@@ -210,8 +210,8 @@ export default function SettingsPage() {
             ))}
           </div>
 
-          <p className="text-center text-xs text-[var(--muted-foreground)] flex items-center justify-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <p className="text-center text-xs text-slate-600 flex items-center justify-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             מומלץ: 20-45 דקות ליום
           </p>
         </div>
@@ -225,7 +225,7 @@ export default function SettingsPage() {
         title="יעד שבועי"
       >
         <div className="space-y-4">
-          <p className="text-sm text-[var(--muted-foreground)]">כמה ימים בשבוע להשיג את היעד?</p>
+          <p className="text-sm text-slate-600">כמה ימים בשבוע להשיג את היעד?</p>
           
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5, 6, 7].map(num => (
@@ -234,8 +234,8 @@ export default function SettingsPage() {
                 onClick={() => setWeeklyGoalDays(num.toString())}
                 className={`relative flex-1 py-4 rounded-2xl text-sm font-bold transition-all duration-300 overflow-hidden ${
                   weeklyGoalDays === num.toString()
-                    ? 'text-white shadow-lg shadow-blue-500/30'
-                    : 'bg-[var(--muted)]/60 text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
+                    ? 'text-white shadow-md shadow-blue-400/20'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {weeklyGoalDays === num.toString() && (
@@ -253,8 +253,8 @@ export default function SettingsPage() {
                 key={num}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   num <= parseInt(weeklyGoalDays)
-                    ? 'bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-500/50'
-                    : 'bg-[var(--muted)]/40'
+                    ? 'bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-400/30'
+                    : 'bg-slate-200'
                 }`}
               />
             ))}
@@ -294,7 +294,7 @@ export default function SettingsPage() {
       >
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-[var(--muted-foreground)]">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
               <Clock className="w-4 h-4" />
               תזכורת להזנת הליכה
             </label>
@@ -303,13 +303,13 @@ export default function SettingsPage() {
                 type="time"
                 value={reminderWalkingTime}
                 onChange={(e) => setReminderWalkingTime(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[var(--muted)]/40 border border-[var(--border)]/50 text-[var(--foreground)] text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+                className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-[var(--muted-foreground)]">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
               <Lightbulb className="w-4 h-4" />
               תזכורת לטיפ היומי
             </label>
@@ -318,12 +318,12 @@ export default function SettingsPage() {
                 type="time"
                 value={reminderTipTime}
                 onChange={(e) => setReminderTipTime(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[var(--muted)]/40 border border-[var(--border)]/50 text-[var(--foreground)] text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+                className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all"
               />
             </div>
           </div>
           
-          <p className="text-center text-xs text-[var(--muted-foreground)]">
+          <p className="text-center text-xs text-slate-600">
             השאר ריק לביטול התזכורת
           </p>
         </div>
@@ -365,13 +365,13 @@ export default function SettingsPage() {
       >
         <div className="space-y-4">
           {/* User Info */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--muted)]/30">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
               {user?.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[var(--foreground)] font-medium truncate">{user?.email}</p>
-              <p className="text-xs text-[var(--muted-foreground)]">חשבון פעיל</p>
+              <p className="text-slate-800 font-medium truncate">{user?.email}</p>
+              <p className="text-xs text-slate-600">חשבון פעיל</p>
             </div>
           </div>
 
@@ -388,7 +388,7 @@ export default function SettingsPage() {
 
       {/* App Info Footer */}
       <div className="text-center pt-4 pb-8">
-        <p className="text-xs text-[var(--muted-foreground)]/60">
+        <p className="text-xs text-slate-500">
           גרסה 1.0 • נבנה עם אהבה
         </p>
       </div>

@@ -219,37 +219,25 @@ export function useWalking() {
       
     mutateRecords(newRecords, false)
 
-    let result
-    if (existing) {
-      const { data, error } = await getSupabase()
-        .from('steps_records')
-        .update({ minutes, note } as never)
-        .eq('id', existing.id)
-        .select()
-        .single()
+    // Use upsert to handle both insert and update cases atomically at the database level
+    // This prevents race conditions where the local cache is stale
+    const { data, error } = await getSupabase()
+      .from('steps_records')
+      .upsert(
+        { user_id: user.id, date, minutes, note } as never,
+        { onConflict: 'user_id,date' }
+      )
+      .select()
+      .single()
 
-      if (error) {
-        mutateRecords() // Revert
-        throw error
-      }
-      result = data
-    } else {
-      const { data, error } = await getSupabase()
-        .from('steps_records')
-        .insert({ user_id: user.id, date, minutes, note } as never)
-        .select()
-        .single()
-
-      if (error) {
-        mutateRecords() // Revert
-        throw error
-      }
-      result = data
+    if (error) {
+      mutateRecords() // Revert
+      throw error
     }
 
     // Revalidate to ensure consistency
     mutateRecords() 
-    return result
+    return data
   }
 
   const deleteRecord = async (id: string) => {

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useWalking } from '@/hooks/useSupabase'
 import { getToday, formatDate } from '@/lib/utils'
-import { Trash2, X, AlertTriangle } from 'lucide-react'
+import { Trash2, X, AlertTriangle, Footprints } from 'lucide-react'
 import type { Tables } from '@/types/database'
 
 interface WalkingEntryModalProps {
@@ -101,8 +101,10 @@ export function WalkingEntryModal({
       isOpen={isOpen}
       onClose={onClose}
       title={existingRecord ? 'עריכת הליכה' : 'הזנת דקות הליכה'}
+      icon={<Footprints className="w-6 h-6 text-white" />}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Date Input */}
         <Input
           type="date"
           label="תאריך"
@@ -111,34 +113,39 @@ export function WalkingEntryModal({
           max={getToday()}
         />
 
+        {/* Minutes Input */}
         <Input
           type="number"
           label="דקות הליכה"
-          placeholder="לדוגמה: 30"
+          placeholder="הזן מספר דקות"
           value={minutes}
           onChange={(e) => setMinutes(e.target.value)}
           min={0}
           autoFocus
         />
 
-        {/* Quick select buttons */}
-        <div className="flex flex-wrap gap-2">
-          {[10, 15, 20, 30, 45, 60].map(num => (
-            <button
-              key={num}
-              type="button"
-              onClick={() => setMinutes(num.toString())}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
-                minutes === num.toString()
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                  : 'bg-white/10 text-white/70 border border-white/10 hover:bg-white/20 hover:border-white/20 hover:text-white'
-              }`}
-            >
-              {num} דק׳
-            </button>
-          ))}
+        {/* Quick select buttons - Elegant Design */}
+        <div>
+          <p className="text-xs font-medium text-slate-500 mb-2.5">בחירה מהירה</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[10, 15, 20, 30, 45, 60].map(num => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setMinutes(num.toString())}
+                className={`px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  minutes === num.toString()
+                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 active:scale-95 shadow-sm'
+                }`}
+              >
+                {num} דק׳
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Note Input */}
         <Input
           label="הערה (אופציונלי)"
           placeholder="הליכה בפארק..."
@@ -148,99 +155,80 @@ export function WalkingEntryModal({
         />
 
         {error && (
-          <p className="text-sm text-rose-300 bg-rose-500/20 border border-rose-500/30 p-4 rounded-xl backdrop-blur-sm">{error}</p>
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-rose-50 to-red-50 border border-rose-200 shadow-sm">
+            <p className="text-sm font-medium text-rose-700">{error}</p>
+          </div>
         )}
 
         {existingRecord && !showDeleteConfirm && (
-          <p className="text-sm text-amber-300 bg-amber-500/20 border border-amber-500/30 p-4 rounded-xl backdrop-blur-sm">
-            📝 קיימת רשומה ל-{formatDate(existingRecord.date)} - השמירה תעדכן אותה
-          </p>
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 shadow-sm">
+            <p className="text-sm font-medium text-amber-700">
+              קיימת רשומה ל-{formatDate(existingRecord.date, 'd בMMMM')} - השמירה תעדכן אותה
+            </p>
+          </div>
         )}
 
-        {/* Delete confirmation */}
+        {/* Delete confirmation - Elegant */}
         {showDeleteConfirm && existingRecord && (
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-500/20 via-pink-500/10 to-red-500/20 border border-rose-500/30 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-rose-500/40 to-pink-500/40 border border-rose-400/30 shadow-lg shadow-rose-500/20 animate-pulse">
-                <AlertTriangle className="w-6 h-6 text-rose-300" />
-              </div>
-              <div>
-                <p className="font-bold text-rose-200 mb-1">מחיקת רשומה</p>
-                <p className="text-sm text-rose-300/80">
-                  {formatDate(existingRecord.date)}
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200">
+            <div className="flex items-start gap-3 mb-3">
+              <AlertTriangle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-rose-900 mb-1">מחיקת רשומה</p>
+                <p className="text-xs text-slate-600">
+                  {formatDate(existingRecord.date, 'd בMMMM')} • {existingRecord.minutes} דקות
                 </p>
               </div>
             </div>
-            <p className="text-sm text-white/70 mb-5 pr-14">
-              פעולה זו לא ניתנת לביטול. האם להמשיך?
+            <p className="text-xs text-slate-600 mb-3 px-1">
+              פעולה זו לא ניתנת לביטול
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="group flex-1 relative py-3 px-4 rounded-xl overflow-hidden font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="flex-1 py-2 px-3 rounded-lg font-medium text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
               >
-                <div className="absolute inset-0 bg-white/10 group-hover:bg-white/20 transition-all duration-300" />
-                <div className="absolute inset-0 border border-white/20 group-hover:border-white/30 rounded-xl transition-all duration-300" />
-                <span className="relative z-10 flex items-center justify-center gap-2 text-white">
-                  <X size={18} />
-                  ביטול
-                </span>
+                ביטול
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="group flex-1 relative py-3 px-4 rounded-xl overflow-hidden font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                className="flex-1 py-2 px-3 rounded-lg font-medium text-sm bg-rose-500 text-white hover:bg-rose-600 transition-colors disabled:opacity-50"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 bg-[length:200%_100%] group-hover:animate-shimmer" />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-rose-500/50 transition-opacity duration-300" />
-                <span className="relative z-10 flex items-center justify-center gap-2 text-white">
-                  <Trash2 size={18} className={deleting ? 'animate-bounce' : ''} />
-                  {deleting ? 'מוחק...' : 'אישור מחיקה'}
-                </span>
+                {deleting ? 'מוחק...' : 'מחק'}
               </button>
             </div>
           </div>
         )}
 
         {!showDeleteConfirm && (
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 pt-3">
             {existingRecord && (
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="group relative p-3 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-110 active:scale-95"
+                className="p-2.5 rounded-lg text-rose-500 hover:bg-gradient-to-br hover:from-rose-50 hover:to-red-50 border border-slate-200 hover:border-rose-300 transition-all hover:scale-105 active:scale-95 shadow-sm"
                 title="מחיקה"
               >
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-red-500/20 group-hover:from-rose-500/40 group-hover:via-pink-500/40 group-hover:to-red-500/40 transition-all duration-300" />
-                <div className="absolute inset-0 border border-rose-500/30 group-hover:border-rose-400/50 rounded-2xl transition-all duration-300" />
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-rose-500/30 transition-opacity duration-300" />
-                {/* Icon with animation */}
-                <Trash2 
-                  size={20} 
-                  className="relative z-10 text-rose-400 group-hover:text-rose-300 transition-all duration-300 group-hover:rotate-12" 
-                />
+                <Trash2 size={18} />
               </button>
             )}
-            <Button
+            <button
               type="button"
-              variant="secondary"
               onClick={onClose}
-              className="flex-1"
+              className="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm bg-white border border-slate-200 text-slate-700 hover:bg-gradient-to-br hover:from-slate-50 hover:to-slate-100 transition-all shadow-sm hover:shadow"
             >
               ביטול
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
-              variant="primary"
-              loading={loading}
-              className="flex-1"
+              disabled={loading}
+              className="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50 shadow-md hover:shadow-lg shadow-emerald-500/25"
             >
-              שמור
-            </Button>
+              {loading ? 'שומר...' : 'שמור'}
+            </button>
           </div>
         )}
       </form>
