@@ -239,8 +239,7 @@ export async function POST(req: Request) {
       temperature: 0.7,
       maxOutputTokens: 1000,
     });
-
-    // Convert to streaming response
+    
     return new Response(result.textStream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
