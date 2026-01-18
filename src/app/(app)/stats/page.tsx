@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { getLast7Days, getLast30Days, calculateMovingAverage } from '@/lib/utils'
 import { useWalking, useWeight, useSettings, useDailyContent } from '@/hooks/useSupabase'
 import { useGamification } from '@/hooks/useGamification'
@@ -8,7 +8,6 @@ import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WeightEntryModal } from '@/components/weight/WeightEntryModal'
 import { Modal } from '@/components/ui/Modal'
 import { AchievementCard } from '@/components/gamification/AchievementCard'
-import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { WalkingChart } from '@/components/steps/StepsChart'
 import { WeightChart } from '@/components/weight/WeightChart'
 import { BackButton } from '@/components/ui/BackButton'
@@ -51,6 +50,106 @@ import {
 import type { Tables } from '@/types/database'
 
 type TabType = 'overview' | 'charts' | 'activity'
+
+// Challenge Tile Component
+function ChallengeTile({ 
+  challenge, 
+  onComplete, 
+  onReplace, 
+  onRemove 
+}: { 
+  challenge: ChallengeWithHistory
+  onComplete: () => void
+  onReplace: () => void
+  onRemove: () => void
+}) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  return (
+    <div className="relative">
+      {/* Main Card */}
+      <div className={`relative rounded-2xl border overflow-hidden transition-all duration-300 ${
+        challenge.completed
+          ? 'bg-emerald-500/20 border-emerald-500/40'
+          : 'bg-slate-700/50 border-slate-600 hover:border-slate-500'
+      }`}>
+        {/* Card Content */}
+        <div className="relative p-4">
+          <div className="flex items-start justify-between mb-2">
+            <button 
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-2.5 flex-1 text-right"
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                challenge.completed 
+                  ? 'bg-emerald-500 shadow-md' 
+                  : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-md'
+              }`}>
+                {challenge.completed ? (
+                  <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                ) : (
+                  <Flame className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <div>
+                <div className={`text-sm font-bold text-right ${challenge.completed ? 'text-emerald-300 line-through' : 'text-white'}`}>
+                  {challenge.title}
+                </div>
+                <span className="text-xs text-white/60 font-medium">
+                  {challenge.completed ? 'הושלם!' : challenge.difficulty === 'easy' ? 'קל' : challenge.difficulty === 'medium' ? 'בינוני' : 'מאתגר'}
+                </span>
+              </div>
+            </button>
+            {!challenge.completed && (
+              <button
+                onClick={onRemove}
+                className="w-7 h-7 rounded-lg bg-slate-600/50 hover:bg-rose-500/30 border border-slate-500 hover:border-rose-400 flex items-center justify-center transition-all"
+              >
+                <X size={14} className="text-white/60 hover:text-rose-400" />
+              </button>
+            )}
+          </div>
+
+          {/* Description - Expandable */}
+          {isExpanded && challenge.description && (
+            <div className="mb-2 p-2.5 rounded-lg bg-slate-600/30 border border-slate-500/50">
+              <p className="text-xs text-white/80 leading-relaxed">{challenge.description}</p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          {!challenge.completed && (
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={onReplace}
+                className="flex-1 py-2 px-3 rounded-xl bg-slate-600/50 hover:bg-slate-600 border border-slate-500 text-white/80 text-xs font-semibold transition-all"
+              >
+                החלף
+              </button>
+              <button
+                onClick={onComplete}
+                className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-xs font-bold transition-all shadow-md"
+              >
+                <div className="text-white flex items-center justify-center gap-1.5">
+                  <Check size={13} strokeWidth={3} />
+                  סיימתי
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Completion Badge */}
+          {challenge.completed && (
+            <div className="mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-500/30 border border-emerald-400/50">
+              <Sparkles size={13} className="text-amber-400" />
+              <span className="text-xs font-black text-emerald-300">+50 XP</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function StatsPage() {
   const { records, getTodayRecord, getConsecutiveGoalDays, deleteRecord: deleteWalkingRecord, refetch: refetchRecords } = useWalking()
@@ -299,228 +398,210 @@ export default function StatsPage() {
       <div>
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* Circle Metrics - Like Dashboard */}
-          <div className="flex flex-col items-center justify-center py-6">
-            {/* Large Circle - Walking */}
-            <div className="relative z-0 mb-4">
-              <CircleMetric
-                size="large"
-                icon={<Footprints className="w-7 h-7" />}
-                value={walkingStats.weeklyAvg}
-                label="ממוצע השבוע"
-                sublabel="דקות ליום"
-                progress={Math.min((walkingStats.weeklyAvg / dailyGoal) * 100, 100)}
-                trend={walkingStats.weeklyTrend}
-                bgGradient="from-emerald-50 to-teal-50"
-              />
-            </div>
-
-            {/* Bottom Row - Weight and Streak */}
-            <div className="flex items-center justify-center gap-6 -mt-8 relative z-10">
-              {/* Weight Circle */}
-              <CircleMetric
-                size="medium"
-                icon={<Scale className="w-5 h-5" />}
-                value={weightStats?.latest || '--'}
-                label="ק״ג אחרון"
-                sublabel={
-                  weightStats?.change !== 0 && weightStats?.change !== undefined
-                    ? `${weightStats.change > 0 ? '+' : ''}${weightStats.change} מהקודם`
-                    : undefined
-                }
-                bgGradient="from-blue-50 to-cyan-50"
-              />
-
-              {/* Streak Circle */}
-              <CircleMetric
-                size="small"
-                icon={<Flame className="w-4 h-4" />}
-                value={gamification?.current_streak || 0}
-                label="ימים ברצף"
-                sublabel={consecutiveGoalDays > 0 ? `${consecutiveGoalDays} ביעד` : undefined}
-                bgGradient="from-orange-50 to-amber-50"
-              />
-            </div>
-          </div>
-
-          {/* Cards Grid - Simplified */}
-          <div className="grid grid-cols-2 gap-3">
-
-            {/* Level Progress Card */}
-            <div className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-md">
-                      <span className="text-xl font-black text-white">{levelInfo.level}</span>
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-white border border-violet-200">
-                      <Zap size={12} className="text-violet-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-800 text-lg">{levelTitle}</div>
-                    <div className="text-sm text-slate-600">{gamification?.total_xp || 0} XP</div>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <div className="text-xs text-slate-500">לרמה הבאה</div>
-                  <div className="text-base font-bold text-slate-800">{levelInfo.nextLevelXP - levelInfo.currentLevelXP} XP</div>
-                </div>
+        <div className="animate-fadeIn">
+          {/* === Simple iPhone App Style === */}
+          <div className="animate-fadeIn">
+            <div className="max-w-md mx-auto bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 rounded-[3rem] overflow-hidden shadow-2xl">
+              {/* Subtle Background Pattern */}
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(147,197,253,0.08),transparent_40%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(167,243,208,0.08),transparent_40%)]" />
               </div>
-              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-500"
-                  style={{ width: `${levelInfo.progress}%` }}
-                />
-              </div>
-            </div>
 
-            {/* Goal Days Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-100">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-cyan-100">
-                  <Target className="w-4 h-4 text-cyan-600" />
-                </div>
-                <span className="text-sm font-semibold text-slate-800">ימי יעד</span>
-              </div>
-              <div className="text-3xl font-black text-slate-800">
-                {walkingStats.goalDaysThisWeek}
-                <span className="text-lg font-semibold text-slate-600">/7</span>
-              </div>
-            </div>
+              {/* Content */}
+              <div className="relative">
+                {/* Top Stats Section */}
+                <div className="p-6 space-y-5">
+                  {/* Stats Rings */}
+                  <div className="flex justify-center mb-4">
+                    <div className="relative w-48 h-48">
+                      {/* Outer Ring - Weekly Goal Progress */}
+                      <svg className="absolute inset-0 w-full h-full -rotate-90">
+                        <circle cx="96" cy="96" r="90" fill="none" stroke="rgba(16,185,129,0.15)" strokeWidth="8" />
+                        <circle cx="96" cy="96" r="90" fill="none" stroke="url(#ring1)" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(walkingStats.goalDaysThisWeek / 7) * 565} 565`} className="drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                      </svg>
+                      {/* Middle Ring - Streak */}
+                      <svg className="absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] -rotate-90">
+                        <circle cx="84" cy="84" r="78" fill="none" stroke="rgba(251,146,60,0.15)" strokeWidth="6" />
+                        <circle cx="84" cy="84" r="78" fill="none" stroke="url(#ring2)" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${Math.min((gamification?.current_streak || 0) / 30 * 490, 490)} 490`} className="drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
+                      </svg>
+                      {/* Inner Ring - Today Progress */}
+                      <svg className="absolute inset-6 w-[calc(100%-48px)] h-[calc(100%-48px)] -rotate-90">
+                        <circle cx="72" cy="72" r="66" fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth="5" />
+                        <circle cx="72" cy="72" r="66" fill="none" stroke="url(#ring3)" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${Math.min((walkingStats.todayMinutes / dailyGoal) * 415, 415)} 415`} className="drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]" />
+                      </svg>
 
-            {/* Monthly Total Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-pink-100">
-                  <Calendar className="w-4 h-4 text-pink-600" />
-                </div>
-                <span className="text-sm font-semibold text-slate-800">החודש</span>
-              </div>
-              <div className="text-3xl font-black text-slate-800">
-                {formatMinutes(walkingStats.monthlyTotal)}
-                <span className="text-sm font-semibold text-slate-600 mr-1">דק׳</span>
-              </div>
-            </div>
-
-            {/* Achievements Preview */}
-            {userAchievements.length > 0 && (
-              <button 
-                onClick={() => setShowAchievementsModal(true)}
-                className="col-span-2 p-5 rounded-3xl bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-100 hover:border-amber-200 transition-all cursor-pointer text-right hover:scale-[1.01]"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-amber-100">
-                      <Trophy className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-slate-800">{userAchievements.length} הישגים</div>
-                      <div className="text-xs text-slate-600">לחץ לצפייה</div>
-                    </div>
-                  </div>
-                  <div className="flex -space-x-2 rtl:space-x-reverse">
-                    {userAchievements.slice(0, 5).map((ach, i) => (
-                      <div 
-                        key={ach.id}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-amber-100 flex items-center justify-center text-lg"
-                        style={{ zIndex: 5 - i }}
-                      >
-                        {ach.icon}
+                      {/* Center Content */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <Footprints className="w-7 h-7 text-emerald-400 mb-1" />
+                        <div className="text-4xl font-black text-white tracking-tight">{walkingStats.weeklyAvg}</div>
+                        <div className="text-xs text-emerald-400 font-medium">דק׳/יום</div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </button>
-            )}
 
-            {/* Daily Tip - Compact */}
-            {settings?.show_daily_tip && tip && (
-              <div className="col-span-2 p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50 border border-slate-200">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-100 shrink-0">
-                    <Lightbulb className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-semibold text-sm text-slate-800 mb-1">{tip.title}</div>
-                    <div className="text-xs text-slate-600 line-clamp-2">{tip.body}</div>
-                  </div>
+                            {/* SVG Gradients */}
+                            <svg className="absolute" width="0" height="0">
+                              <defs>
+                                <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="#10b981" />
+                                  <stop offset="100%" stopColor="#06b6d4" />
+                                </linearGradient>
+                                <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="#f97316" />
+                                  <stop offset="100%" stopColor="#fbbf24" />
+                                </linearGradient>
+                                <linearGradient id="ring3" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="#8b5cf6" />
+                                  <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </div>
+                        </div>
+
+                        {/* Ring Legend */}
+                        <div className="flex justify-center gap-4 mb-5">
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                            <span className="text-sm text-emerald-300 font-medium">{walkingStats.goalDaysThisWeek}/7 ימים</span>
+                          </div>
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 border border-orange-500/30">
+                            <div className="w-2.5 h-2.5 rounded-full bg-orange-400" />
+                            <span className="text-sm text-orange-300 font-medium">{gamification?.current_streak || 0} רצף</span>
+                          </div>
+                          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/20 border border-violet-500/30">
+                            <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
+                            <span className="text-sm text-violet-300 font-medium">{walkingStats.todayMinutes} היום</span>
+                          </div>
+                        </div>
+
+                        {/* Quick Stats Grid */}
+                        <div className="grid grid-cols-2 gap-4 mb-5">
+                          {/* Weight */}
+                          <div className="flex flex-col items-center p-4 rounded-2xl bg-blue-500/20 border border-blue-500/30">
+                            <Scale className="w-6 h-6 text-blue-400 mb-2" />
+                            <span className="text-2xl font-black text-white">{weightStats?.latest || '--'}</span>
+                            <span className="text-sm text-blue-300 font-medium">משקל (ק״ג)</span>
+                          </div>
+                          {/* Monthly */}
+                          <div className="flex flex-col items-center p-4 rounded-2xl bg-pink-500/20 border border-pink-500/30">
+                            <Calendar className="w-6 h-6 text-pink-400 mb-2" />
+                            <span className="text-2xl font-black text-white">{Math.floor(walkingStats.monthlyTotal / 60)}:{(walkingStats.monthlyTotal % 60).toString().padStart(2, '0')}</span>
+                            <span className="text-sm text-pink-300 font-medium">שעות חודש</span>
+                          </div>
+                          {/* Level */}
+                          <div className="flex flex-col items-center p-4 rounded-2xl bg-violet-500/20 border border-violet-500/30">
+                            <Zap className="w-6 h-6 text-violet-400 mb-2" />
+                            <span className="text-2xl font-black text-white">{levelInfo.level}</span>
+                            <span className="text-sm text-violet-300 font-medium">{levelTitle}</span>
+                          </div>
+                          {/* XP */}
+                          <div className="flex flex-col items-center p-4 rounded-2xl bg-amber-500/20 border border-amber-500/30">
+                            <Sparkles className="w-6 h-6 text-amber-400 mb-2" />
+                            <span className="text-2xl font-black text-white">{gamification?.total_xp || 0}</span>
+                            <span className="text-sm text-amber-300 font-medium">נקודות XP</span>
+                          </div>
+                        </div>
+
+                        {/* Achievements Row */}
+                        {userAchievements.length > 0 && (
+                          <button onClick={() => setShowAchievementsModal(true)} className="w-full px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 transition-colors mb-5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Trophy className="w-6 h-6 text-amber-400" />
+                                <span className="text-base text-white/90 font-bold">{userAchievements.length} הישגים</span>
+                              </div>
+                              <div className="flex -space-x-2 rtl:space-x-reverse">
+                                {userAchievements.slice(0, 6).map((ach, i) => (
+                                  <div key={ach.id} className="w-10 h-10 rounded-full bg-slate-700 border-2 border-amber-500/40 flex items-center justify-center text-base" style={{ zIndex: 6 - i }}>
+                                    {ach.icon}
+                                  </div>
+                                ))}
+                                {userAchievements.length > 6 && (
+                                  <div className="w-10 h-10 rounded-full bg-slate-700 border-2 border-white/30 flex items-center justify-center text-sm text-white/70 font-bold">+{userAchievements.length - 6}</div>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        )}
+
+                        {/* Daily Tip */}
+                        {settings?.show_daily_tip && tip && (
+                          <div className="p-5 rounded-2xl bg-emerald-500/20 border border-emerald-500/30">
+                            <div className="flex items-start gap-3">
+                              <Lightbulb className="w-6 h-6 text-emerald-400 shrink-0 mt-1" />
+                              <div className="min-w-0">
+                                <div className="text-base font-bold text-emerald-300 mb-2">{tip.title}</div>
+                                <div className="text-sm text-white/70 leading-relaxed">{tip.body}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                 </div>
+
+                {/* Challenges Section */}
+                {settings?.show_daily_challenge && challenges.length > 0 && (
+                  <div className="p-6 pt-0">
+                    {/* Section Header */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-md flex items-center justify-center">
+                        <Target className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-black text-white">אתגרים יומיים</h2>
+                        <p className="text-xs text-emerald-400 font-medium">{challenges.filter(c => !c.completed).length} פעילים</p>
+                      </div>
+                    </div>
+
+                    {/* Challenges List */}
+                    <div className="space-y-3">
+                      {challenges.map((ch: ChallengeWithHistory) => (
+                        <ChallengeTile
+                          key={ch.historyId}
+                          challenge={ch}
+                          onComplete={() => {
+                            if (ch.historyId) {
+                              completeChallenge(ch.historyId).then(() => {
+                                incrementStat('challenge')
+                                addXP(50)
+                              }).catch(console.error)
+                            }
+                          }}
+                          onReplace={() => {
+                            if (ch.historyId) {
+                              replaceChallenge(ch.historyId).catch(console.error)
+                            }
+                          }}
+                          onRemove={() => {
+                            if (ch.historyId) {
+                              removeChallenge(ch.historyId).catch(console.error)
+                            }
+                          }}
+                        />
+                      ))}
+
+                      {/* Add New Challenge */}
+                      <button
+                        onClick={handleAddNewChallenge}
+                        disabled={isAddingChallenge}
+                        className="w-full py-3 rounded-2xl border border-dashed border-white/30 hover:border-emerald-400 bg-white/5 hover:bg-emerald-500/10 transition-all disabled:opacity-50"
+                      >
+                        {isAddingChallenge ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-emerald-400 rounded-full animate-spin" />
+                            <span className="text-sm text-white/70 font-medium">טוען...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <Plus size={16} className="text-emerald-400" />
+                            <span className="text-sm font-semibold text-white/80">הוסף אתגר חדש</span>
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Daily Challenge - Enhanced */}
-            {settings?.show_daily_challenge && (
-              <div className="col-span-2 space-y-3">
-                {/* Challenges List */}
-                {challenges.length > 0 && challenges.map((ch: ChallengeWithHistory) => (
-                  <ChallengeCard
-                    key={ch.historyId}
-                    challenge={ch}
-                    onComplete={() => {
-                      if (ch.historyId) {
-                        completeChallenge(ch.historyId).then(() => {
-                          incrementStat('challenge')
-                          addXP(50)
-                        }).catch(error => {
-                          console.error('Error completing challenge:', error)
-                        })
-                      }
-                    }}
-                    onReplace={ch.completed ? undefined : () => {
-                      if (ch.historyId) {
-                        replaceChallenge(ch.historyId).catch(error => {
-                          console.error('Error replacing challenge:', error)
-                        })
-                      }
-                    }}
-                    onRemove={() => {
-                      if (ch.historyId) {
-                        removeChallenge(ch.historyId).catch(error => {
-                          console.error('Error removing challenge:', error)
-                        })
-                      }
-                    }}
-                    challengeStreak={challengeStreak}
-                    xpReward={50}
-                    compact
-                  />
-                ))}
-
-                {/* Add Challenge Button - Centered below challenges */}
-                <div className="flex justify-center pt-2">
-                  <button
-                    onClick={handleAddNewChallenge}
-                    disabled={isAddingChallenge}
-                    aria-label="הוסף אתגר"
-                    title="הוסף אתגר"
-                    className={`
-                      group relative w-12 h-12 rounded-full
-                      overflow-hidden
-                      transition-all duration-300
-                      hover:scale-110 active:scale-95
-                      disabled:opacity-70 disabled:cursor-not-allowed
-                      flex items-center justify-center
-                    `}
-                  >
-                    {/* Button background gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] via-[var(--primary)] to-[var(--accent)] bg-[length:200%_100%] group-hover:animate-shimmer" />
-                    
-                    {/* Glow effect */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-[var(--accent)]/50 transition-opacity duration-300" />
-                    
-                    {/* Button content */}
-                    {isAddingChallenge ? (
-                      <div className="relative z-10 w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Plus size={20} className="relative z-10 text-white" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -790,6 +871,26 @@ export default function StatsPage() {
         }
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+          25% { transform: translate(10px, -15px) rotate(90deg); opacity: 0.7; }
+          50% { transform: translate(-5px, -25px) rotate(180deg); opacity: 0.5; }
+          75% { transform: translate(-15px, -10px) rotate(270deg); opacity: 0.8; }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slideIn {
+          animation: slideIn 0.5s ease-out forwards;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
