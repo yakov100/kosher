@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUserContext } from '@/providers/UserProvider'
 import { getToday } from '@/lib/utils'
+import { format } from 'date-fns'
 import useSWR from 'swr'
 
 function getSupabase() {
@@ -188,7 +189,7 @@ export function useGamification() {
     const today = getToday()
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd')
 
     // If last activity was today or yesterday, streak is valid
     if (gam.last_activity_date === today || gam.last_activity_date === yesterdayStr) {
@@ -280,7 +281,7 @@ export function useGamification() {
     const today = getToday()
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd')
 
     let newStreak = gamification.current_streak
     let newLongest = gamification.longest_streak

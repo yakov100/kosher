@@ -15,84 +15,159 @@ export default function WalkingAnimation({ isActive, size = 160 }: WalkingAnimat
       className="relative rounded-full overflow-hidden"
       style={{ width: size, height: size }}
     >
-      {/* Sky background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100" />
+      {/* Sky background - urban sky */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-400 via-blue-300 to-blue-200" />
 
       {/* Sun */}
       <div
-        className="absolute top-4 right-6 w-8 h-8 bg-yellow-300 rounded-full"
-        style={{ boxShadow: '0 0 20px 5px rgba(253, 224, 71, 0.5)' }}
+        className="absolute top-4 right-8 w-10 h-10 bg-yellow-300 rounded-full"
+        style={{ boxShadow: '0 0 25px 8px rgba(253, 224, 71, 0.4)' }}
       />
-
-      {/* Mountains in far background */}
-      <div className="absolute bottom-8 left-0 right-0 h-24 opacity-30">
-        <svg className="w-full h-full" viewBox="0 0 200 100" preserveAspectRatio="none">
-          <polygon points="0,100 30,40 60,70 90,30 120,60 150,50 180,70 200,55 200,100" fill="#6b7280" />
-          <polygon points="0,100 20,60 50,80 80,50 110,75 140,65 170,80 200,70 200,100" fill="#9ca3af" opacity="0.7" />
-        </svg>
-      </div>
 
       {/* Clouds */}
       <div
-        className="absolute top-6 clouds-layer"
+        className="absolute top-8 clouds-layer"
         style={{ animationPlayState: animationState }}
       >
-        <svg className="w-12 h-6 text-white/80" viewBox="0 0 60 30" fill="currentColor">
-          <ellipse cx="20" cy="20" rx="15" ry="10" />
-          <ellipse cx="35" cy="18" rx="12" ry="8" />
-          <ellipse cx="45" cy="22" rx="10" ry="7" />
+        <svg className="w-16 h-8 text-white/90" viewBox="0 0 80 40" fill="currentColor">
+          <ellipse cx="25" cy="25" rx="18" ry="12" />
+          <ellipse cx="45" cy="22" rx="15" ry="10" />
+          <ellipse cx="60" cy="26" rx="12" ry="9" />
         </svg>
       </div>
 
-      {/* Birds flying */}
+      {/* Background buildings - far away */}
       <div
-        className="absolute top-12 left-8 birds-layer"
+        className="absolute bottom-20 w-[400%] buildings-far-layer"
         style={{ animationPlayState: animationState }}
       >
-        {[...Array(3)].map((_, i) => (
-          <svg key={`bird-${i}`} className="w-6 h-4 text-slate-700/40 absolute" style={{ top: i * 8, left: i * 12 }} viewBox="0 0 24 16">
-            <path d="M 2 8 Q 6 4 12 8 Q 18 4 22 8" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-          </svg>
-        ))}
-      </div>
-
-      {/* Background trees layer (slower, smaller - farther away) */}
-      <div
-        className="absolute bottom-8 w-[400%] bg-trees-layer"
-        style={{ animationPlayState: animationState }}
-      >
-        <div className="flex gap-16 items-end">
-          {[...Array(8)].map((_, i) => (
-            <svg key={`bg-tree-${i}`} className="w-8 h-12 text-emerald-700/60" viewBox="0 0 40 60" fill="currentColor">
-              <polygon points="20,0 35,40 5,40" />
-              <rect x="16" y="40" width="8" height="12" fill="#6B4423" />
-            </svg>
+        <div className="flex gap-2 items-end">
+          {[...Array(12)].map((_, i) => (
+            <div key={`far-building-${i}`} className="flex flex-col items-center">
+              <div 
+                className="bg-gray-400/60 relative"
+                style={{ 
+                  width: `${16 + (i % 3) * 6}px`, 
+                  height: `${30 + (i % 4) * 12}px` 
+                }}
+              >
+                {/* Windows */}
+                <div className="absolute inset-1 grid grid-cols-2 gap-1">
+                  {[...Array(6)].map((_, w) => (
+                    <div key={w} className="w-1.5 h-1 bg-yellow-200/40" />
+                  ))}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Bushes and rocks layer */}
+      {/* Mid-distance buildings */}
       <div
-        className="absolute bottom-10 w-[350%] grass-layer"
+        className="absolute bottom-20 w-[350%] buildings-mid-layer"
+        style={{ animationPlayState: animationState }}
+      >
+        <div className="flex gap-3 items-end">
+          {[...Array(10)].map((_, i) => (
+            <div key={`mid-building-${i}`} className="flex flex-col items-center">
+              <div 
+                className="bg-gradient-to-t from-gray-500 to-gray-400 relative rounded-t"
+                style={{ 
+                  width: `${24 + (i % 3) * 8}px`, 
+                  height: `${40 + (i % 5) * 16}px` 
+                }}
+              >
+                {/* Windows grid */}
+                <div className="absolute inset-2 grid grid-cols-3 gap-1">
+                  {[...Array(12)].map((_, w) => (
+                    <div 
+                      key={w} 
+                      className="w-2 h-2 rounded-sm"
+                      style={{ 
+                        backgroundColor: Math.random() > 0.3 ? '#fef08a' : '#94a3b8' 
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Road/Ground */}
+      <div className="absolute bottom-0 w-full h-12 bg-gradient-to-b from-gray-600 via-gray-700 to-gray-800">
+        {/* Road markings */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-[300%] h-1 road-markings"
+          style={{ animationPlayState: animationState }}
+        >
+          <div className="flex gap-8">
+            {[...Array(20)].map((_, i) => (
+              <div key={`marking-${i}`} className="w-8 h-1 bg-yellow-300" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Sidewalk */}
+      <div className="absolute bottom-12 w-full h-8 bg-gray-400" />
+
+      {/* Foreground buildings and elements */}
+      <div
+        className="absolute bottom-20 w-[300%] buildings-front-layer"
         style={{ animationPlayState: animationState }}
       >
         <div className="flex gap-12 items-end">
-          {[...Array(12)].map((_, i) => (
-            <div key={`bush-rock-${i}`} className="flex gap-6 items-end">
-              {/* Bush */}
-              {i % 2 === 0 && (
-                <svg className="w-10 h-6" viewBox="0 0 40 24">
-                  <ellipse cx="10" cy="18" rx="8" ry="6" fill="#15803d" />
-                  <ellipse cx="20" cy="15" rx="10" ry="8" fill="#16a34a" />
-                  <ellipse cx="30" cy="18" rx="8" ry="6" fill="#15803d" />
-                  <ellipse cx="20" cy="10" rx="7" ry="5" fill="#22c55e" />
-                </svg>
-              )}
-              {/* Rock */}
+          {[...Array(8)].map((_, i) => (
+            <div key={`front-building-${i}`} className="flex gap-4 items-end">
+              {/* Building */}
+              <div 
+                className="bg-gradient-to-t from-blue-900 to-blue-700 relative rounded-t-sm"
+                style={{ 
+                  width: `${30 + (i % 2) * 12}px`, 
+                  height: `${60 + (i % 3) * 20}px` 
+                }}
+              >
+                {/* Windows */}
+                <div className="absolute inset-2 flex flex-col gap-1.5">
+                  {[...Array(5)].map((_, row) => (
+                    <div key={row} className="flex gap-1.5 justify-center">
+                      {[...Array(3)].map((_, col) => (
+                        <div 
+                          key={col} 
+                          className="w-2.5 h-2 rounded-sm"
+                          style={{ 
+                            backgroundColor: Math.random() > 0.4 ? '#fbbf24' : '#64748b' 
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Street elements */}
               {i % 3 === 0 && (
-                <svg className="w-6 h-4" viewBox="0 0 24 16">
-                  <ellipse cx="12" cy="12" rx="10" ry="8" fill="#78716c" />
-                  <ellipse cx="8" cy="10" rx="4" ry="3" fill="#a8a29e" opacity="0.5" />
+                <div className="flex flex-col items-center gap-1">
+                  {/* Traffic light */}
+                  <div className="w-2.5 h-7 bg-gray-800 rounded flex flex-col items-center justify-around py-0.5">
+                    <div className="w-1 h-1 rounded-full bg-red-500" />
+                    <div className="w-1 h-1 rounded-full bg-yellow-500/40" />
+                    <div className="w-1 h-1 rounded-full bg-green-500/40" />
+                  </div>
+                  <div className="w-0.5 h-5 bg-gray-700" />
+                </div>
+              )}
+
+              {/* Tree */}
+              {i % 2 === 1 && (
+                <svg className="w-6 h-10" viewBox="0 0 30 50">
+                  <rect x="12" y="30" width="6" height="15" fill="#8B5A2B" />
+                  <circle cx="15" cy="25" r="12" fill="#22c55e" />
+                  <circle cx="10" cy="28" r="8" fill="#16a34a" />
+                  <circle cx="20" cy="28" r="8" fill="#16a34a" />
                 </svg>
               )}
             </div>
@@ -100,110 +175,101 @@ export default function WalkingAnimation({ isActive, size = 160 }: WalkingAnimat
         </div>
       </div>
 
-      {/* Ground */}
-      <div className="absolute bottom-0 w-full h-12 bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-400" />
-
-      {/* Grass details */}
+      {/* Cars on the road */}
       <div
-        className="absolute bottom-10 w-[300%] grass-layer"
+        className="absolute bottom-2 w-[300%] cars-layer"
         style={{ animationPlayState: animationState }}
       >
-        <div className="flex gap-3">
-          {[...Array(30)].map((_, i) => (
-            <div key={`grass-${i}`} className="flex gap-1">
-              <div className="w-1 h-3 bg-emerald-700 rounded-t-full transform -rotate-12" />
-              <div className="w-1 h-4 bg-emerald-600 rounded-t-full" />
-              <div className="w-1 h-3 bg-emerald-700 rounded-t-full transform rotate-12" />
+        <div className="flex gap-20 items-center">
+          {[...Array(8)].map((_, i) => (
+            <div key={`vehicle-${i}`}>
+              {i % 4 === 0 ? (
+                // Bus
+                <svg className="w-20 h-9" viewBox="0 0 90 40">
+                  <rect x="5" y="12" width="80" height="22" rx="2" fill="#f59e0b" />
+                  <rect x="8" y="8" width="74" height="6" rx="1" fill="#d97706" />
+                  {/* Windows */}
+                  <rect x="12" y="15" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="25" y="15" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="38" y="15" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="51" y="15" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="64" y="15" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  {/* Wheels */}
+                  <circle cx="20" cy="34" r="4" fill="#1e293b" />
+                  <circle cx="70" cy="34" r="4" fill="#1e293b" />
+                  <circle cx="20" cy="34" r="2" fill="#64748b" />
+                  <circle cx="70" cy="34" r="2" fill="#64748b" />
+                  {/* Headlights */}
+                  <circle cx="82" cy="22" r="2" fill="#fef08a" />
+                </svg>
+              ) : i % 4 === 1 ? (
+                // Truck
+                <svg className="w-16 h-9" viewBox="0 0 75 40">
+                  <rect x="5" y="15" width="35" height="18" rx="2" fill="#16a34a" />
+                  <rect x="42" y="8" width="28" height="25" rx="2" fill="#15803d" />
+                  <rect x="45" y="12" width="10" height="8" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="58" y="12" width="8" height="8" fill="#bfdbfe" opacity="0.7" />
+                  {/* Wheels */}
+                  <circle cx="15" cy="33" r="4" fill="#1e293b" />
+                  <circle cx="32" cy="33" r="4" fill="#1e293b" />
+                  <circle cx="60" cy="33" r="4" fill="#1e293b" />
+                  <circle cx="15" cy="33" r="2" fill="#64748b" />
+                  <circle cx="32" cy="33" r="2" fill="#64748b" />
+                  <circle cx="60" cy="33" r="2" fill="#64748b" />
+                  <circle cx="68" cy="22" r="2" fill="#fef08a" />
+                </svg>
+              ) : (
+                // Regular car
+                <svg className="w-14 h-8" viewBox="0 0 70 35">
+                  <rect x="5" y="15" width="60" height="14" rx="3" fill={i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#ef4444" : "#8b5cf6"} />
+                  <path d="M 18 15 L 23 6 L 47 6 L 52 15 Z" fill={i % 3 === 0 ? "#2563eb" : i % 3 === 1 ? "#dc2626" : "#7c3aed"} />
+                  <rect x="26" y="9" width="10" height="6" fill="#bfdbfe" opacity="0.7" />
+                  <rect x="38" y="9" width="10" height="6" fill="#bfdbfe" opacity="0.7" />
+                  <circle cx="18" cy="29" r="4" fill="#1e293b" />
+                  <circle cx="52" cy="29" r="4" fill="#1e293b" />
+                  <circle cx="18" cy="29" r="2" fill="#64748b" />
+                  <circle cx="52" cy="29" r="2" fill="#64748b" />
+                  <circle cx="62" cy="21" r="2" fill="#fef08a" />
+                </svg>
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Foreground trees and flowers layer (faster - closer) */}
+      {/* Other people walking on sidewalk */}
       <div
-        className="absolute bottom-10 w-[300%] trees-layer"
+        className="absolute bottom-12 w-[300%] people-layer"
         style={{ animationPlayState: animationState }}
       >
         <div className="flex gap-20 items-end">
-          {[...Array(6)].map((_, i) => (
-            <div key={`fg-${i}`} className="flex gap-8 items-end">
-              {/* Tree */}
-              <svg className="w-14 h-20" viewBox="0 0 50 70">
-                {/* Trunk */}
-                <rect x="20" y="45" width="10" height="20" fill="#8B5A2B" />
-                {/* Foliage layers */}
-                <ellipse cx="25" cy="35" rx="20" ry="15" fill="#22c55e" />
-                <ellipse cx="18" cy="42" rx="12" ry="10" fill="#16a34a" />
-                <ellipse cx="32" cy="42" rx="12" ry="10" fill="#16a34a" />
-                <ellipse cx="25" cy="25" rx="15" ry="12" fill="#4ade80" />
+          {[...Array(8)].map((_, i) => (
+            <div key={`person-${i}`} className="person-walk">
+              <svg className="w-6 h-10" viewBox="0 0 32 48">
+                {/* Person silhouette */}
+                <circle cx="16" cy="8" r="4" fill="#d4a574" />
+                {/* Body */}
+                <rect x="12" y="12" width="8" height="12" rx="2" fill={i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#ec4899" : "#10b981"} />
+                {/* Legs */}
+                <rect x="12" y="24" width="3" height="10" rx="1" fill="#1e293b" />
+                <rect x="17" y="24" width="3" height="10" rx="1" fill="#1e293b" />
+                {/* Arms */}
+                <rect x="9" y="14" width="2" height="8" rx="1" fill="#d4a574" />
+                <rect x="21" y="14" width="2" height="8" rx="1" fill="#d4a574" />
               </svg>
-
-              {/* Flowers and mushrooms */}
-              <div className="flex gap-3 mb-2">
-                <svg className="w-6 h-8" viewBox="0 0 24 32">
-                  <line x1="12" y1="18" x2="12" y2="32" stroke="#16a34a" strokeWidth="2" />
-                  <circle cx="12" cy="12" r="6" fill="#f472b6" />
-                  <circle cx="12" cy="12" r="3" fill="#fbbf24" />
-                </svg>
-                {i % 2 === 0 && (
-                  <svg className="w-5 h-6" viewBox="0 0 20 24">
-                    <rect x="8" y="14" width="4" height="10" fill="#fef3c7" />
-                    <ellipse cx="10" cy="10" rx="8" ry="6" fill="#dc2626" />
-                    <circle cx="6" cy="9" r="1.5" fill="white" />
-                    <circle cx="14" cy="9" r="1.5" fill="white" />
-                  </svg>
-                )}
-                <svg className="w-5 h-7" viewBox="0 0 24 32">
-                  <line x1="12" y1="18" x2="12" y2="32" stroke="#16a34a" strokeWidth="2" />
-                  <circle cx="12" cy="12" r="5" fill="#c084fc" />
-                  <circle cx="12" cy="12" r="2" fill="#fef08a" />
-                </svg>
-                <svg className="w-6 h-8" viewBox="0 0 24 32">
-                  <line x1="12" y1="18" x2="12" y2="32" stroke="#16a34a" strokeWidth="2" />
-                  <circle cx="12" cy="12" r="6" fill="#fb923c" />
-                  <circle cx="12" cy="12" r="3" fill="#fbbf24" />
-                </svg>
-              </div>
-
-              {/* Butterfly */}
-              {i % 3 === 0 && (
-                <div className="butterfly-float absolute -top-8 left-8">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <ellipse cx="8" cy="12" rx="5" ry="7" fill="#f472b6" opacity="0.7" />
-                    <ellipse cx="16" cy="12" rx="5" ry="7" fill="#fb923c" opacity="0.7" />
-                    <line x1="12" y1="8" x2="12" y2="16" stroke="#1e293b" strokeWidth="1.5" />
-                    <circle cx="12" cy="10" r="1.5" fill="#1e293b" />
-                  </svg>
-                </div>
-              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Fence posts */}
-      <div
-        className="absolute bottom-11 w-[300%] trees-layer"
-        style={{ animationPlayState: animationState }}
-      >
-        <div className="flex gap-8 items-end">
-          {[...Array(20)].map((_, i) => (
-            <div key={`fence-${i}`} className="flex flex-col items-center">
-              <div className="w-1 h-8 bg-amber-800/40" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Running character - minimalist modern athlete */}
-      <div className="absolute inset-0 flex items-end justify-center pb-6">
+      {/* Main running character - stays in center */}
+      <div className="absolute inset-0 flex items-end justify-center pb-12">
         <div
           className="runner-bounce"
           style={{ animationPlayState: animationState }}
         >
-          <svg className="w-16 h-20" viewBox="0 0 64 80">
+          <svg className="w-16 h-20" viewBox="0 0 80 96">
             <defs>
-              {/* Subtle gradients for depth */}
               <linearGradient id="skinTone" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#d4a574" />
                 <stop offset="100%" stopColor="#c4936b" />
@@ -219,51 +285,70 @@ export default function WalkingAnimation({ isActive, size = 160 }: WalkingAnimat
             </defs>
 
             {/* Shadow */}
-            <ellipse cx="32" cy="78" rx="12" ry="2.5" fill="rgba(0,0,0,0.2)" />
-
-            {/* Back arm - clean and simple */}
-            <g className="arm-back" style={{ transformOrigin: '30px 40px', animationPlayState: animationState }}>
-              <line x1="30" y1="40" x2="40" y2="50" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
-            </g>
+            <ellipse cx="40" cy="92" rx="14" ry="3" fill="rgba(0,0,0,0.3)" />
 
             {/* Back leg */}
-            <g className="leg-back" style={{ transformOrigin: '34px 56px', animationPlayState: animationState }}>
-              <line x1="34" y1="56" x2="44" y2="68" stroke="url(#shortsTone)" strokeWidth="6" strokeLinecap="round" />
-              <line x1="44" y1="68" x2="48" y2="74" stroke="url(#skinTone)" strokeWidth="4" strokeLinecap="round" />
-              {/* Shoe - minimal */}
-              <ellipse cx="50" cy="75" rx="6" ry="3" fill="#059669" />
-              <ellipse cx="49.5" cy="74.5" rx="4" ry="2" fill="#10b981" />
+            <g className="leg-back" style={{ transformOrigin: '42px 66px', animationPlayState: animationState }}>
+              <line x1="42" y1="66" x2="48" y2="78" stroke="url(#shortsTone)" strokeWidth="7" strokeLinecap="round" />
+              <line x1="48" y1="78" x2="52" y2="88" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
+              <ellipse cx="54" cy="89" rx="6" ry="3" fill="#059669" transform="rotate(-10 54 89)" />
+              <ellipse cx="54" cy="88.5" rx="4" ry="2" fill="#10b981" transform="rotate(-10 54 88.5)" />
             </g>
 
-            {/* Torso - clean athletic shape */}
-            <ellipse cx="30" cy="46" rx="10" ry="13" fill="url(#shirtTone)" transform="rotate(10 30 46)" />
+            {/* Torso */}
+            <ellipse cx="38" cy="50" rx="12" ry="16" fill="url(#shirtTone)" transform="rotate(-8 38 50)" />
             
-            {/* Running shorts - simple */}
-            <ellipse cx="32" cy="56" rx="9" ry="6" fill="url(#shortsTone)" />
+            {/* Shorts */}
+            <ellipse cx="40" cy="64" rx="11" ry="8" fill="url(#shortsTone)" transform="rotate(-5 40 64)" />
+
+            {/* Back arm */}
+            <g className="arm-back" style={{ transformOrigin: '36px 46px', animationPlayState: animationState }}>
+              <line x1="36" y1="46" x2="44" y2="54" stroke="url(#shirtTone)" strokeWidth="6" strokeLinecap="round" />
+              <line x1="44" y1="54" x2="48" y2="62" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
+              <ellipse cx="49" cy="64" rx="3" ry="3.5" fill="url(#skinTone)" />
+            </g>
 
             {/* Front leg */}
-            <g className="leg-front" style={{ transformOrigin: '30px 56px', animationPlayState: animationState }}>
-              <line x1="30" y1="56" x2="20" y2="68" stroke="url(#shortsTone)" strokeWidth="6" strokeLinecap="round" />
-              <line x1="20" y1="68" x2="16" y2="74" stroke="url(#skinTone)" strokeWidth="4" strokeLinecap="round" />
-              {/* Shoe - minimal */}
-              <ellipse cx="14" cy="75" rx="6" ry="3" fill="#059669" />
-              <ellipse cx="14.5" cy="74.5" rx="4" ry="2" fill="#10b981" />
+            <g className="leg-front" style={{ transformOrigin: '38px 66px', animationPlayState: animationState }}>
+              <line x1="38" y1="66" x2="32" y2="78" stroke="url(#shortsTone)" strokeWidth="7" strokeLinecap="round" />
+              <line x1="32" y1="78" x2="28" y2="88" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
+              <ellipse cx="26" cy="89" rx="6" ry="3" fill="#059669" transform="rotate(-10 26 89)" />
+              <ellipse cx="26" cy="88.5" rx="4" ry="2" fill="#10b981" transform="rotate(-10 26 88.5)" />
             </g>
 
             {/* Neck */}
-            <line x1="26" y1="32" x2="24" y2="36" stroke="url(#skinTone)" strokeWidth="4" strokeLinecap="round" />
+            <ellipse cx="34" cy="38" rx="4" ry="5" fill="url(#skinTone)" />
 
-            {/* Head - simple silhouette */}
-            <circle cx="24" cy="22" r="10" fill="url(#skinTone)" />
+            {/* Head */}
+            <ellipse cx="32" cy="26" rx="11" ry="13" fill="url(#skinTone)" />
             
-            {/* Minimal hair */}
-            <path d="M 16 18 Q 20 12 28 14 Q 32 16 34 20" fill="#2d3748" />
+            {/* Hair */}
+            <path d="M 24 18 Q 28 12 36 14 Q 42 16 43 22 L 40 28 Q 35 24 28 26 Z" fill="#2d3748" />
+            
+            {/* Ear */}
+            <ellipse cx="23" cy="26" rx="2.5" ry="4" fill="#c4936b" />
+            <ellipse cx="23" cy="26" rx="1.5" ry="2.5" fill="#d4a574" />
+            
+            {/* Eye */}
+            <ellipse cx="30" cy="24" rx="3" ry="3.5" fill="white" />
+            <ellipse cx="31" cy="24" rx="2" ry="2.5" fill="#1e293b" />
+            <circle cx="31.5" cy="23" r="0.8" fill="white" />
+            
+            {/* Eyebrow */}
+            <path d="M 27 20 Q 31 19 34 20" stroke="#2d3748" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            
+            {/* Nose */}
+            <path d="M 36 24 L 40 27 L 38 29 Q 36 28 36 27" fill="#c4936b" />
+            
+            {/* Smile */}
+            <path d="M 36 32 Q 38 34 35 33" stroke="#8b6f47" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <path d="M 36 32 L 34 32" stroke="#8b6f47" strokeWidth="1" strokeLinecap="round" />
 
-            {/* Front arm - clean */}
-            <g className="arm-front" style={{ transformOrigin: '28px 40px', animationPlayState: animationState }}>
-              <line x1="28" y1="40" x2="18" y2="32" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
-              {/* Fist - minimal */}
-              <circle cx="17" cy="31" r="2.5" fill="#d4a574" />
+            {/* Front arm */}
+            <g className="arm-front" style={{ transformOrigin: '34px 46px', animationPlayState: animationState }}>
+              <line x1="34" y1="46" x2="26" y2="38" stroke="url(#shirtTone)" strokeWidth="6" strokeLinecap="round" />
+              <line x1="26" y1="38" x2="20" y2="44" stroke="url(#skinTone)" strokeWidth="5" strokeLinecap="round" />
+              <ellipse cx="19" cy="46" rx="3" ry="3.5" fill="url(#skinTone)" />
             </g>
           </svg>
         </div>
@@ -272,84 +357,70 @@ export default function WalkingAnimation({ isActive, size = 160 }: WalkingAnimat
       {/* CSS Animations */}
       <style jsx>{`
         .clouds-layer {
-          animation: scroll-clouds 20s linear infinite;
+          animation: scroll-horizontal 25s linear infinite;
         }
 
-        .birds-layer {
-          animation: scroll-birds 15s linear infinite;
+        .buildings-far-layer {
+          animation: scroll-horizontal 12s linear infinite;
         }
 
-        .bg-trees-layer {
-          animation: scroll-bg 8s linear infinite;
+        .buildings-mid-layer {
+          animation: scroll-horizontal 8s linear infinite;
         }
 
-        .trees-layer {
-          animation: scroll-trees 4s linear infinite;
+        .buildings-front-layer {
+          animation: scroll-horizontal 5s linear infinite;
         }
 
-        .grass-layer {
-          animation: scroll-grass 2.5s linear infinite;
+        .road-markings {
+          animation: scroll-horizontal 2s linear infinite;
+        }
+
+        .cars-layer {
+          animation: scroll-horizontal 4s linear infinite;
+        }
+
+        .people-layer {
+          animation: scroll-horizontal 6s linear infinite;
         }
 
         .runner-bounce {
-          animation: run-bounce 0.25s ease-in-out infinite;
+          animation: run-bounce 0.3s ease-in-out infinite;
         }
 
-        .butterfly-float {
-          animation: butterfly-float 3s ease-in-out infinite;
+        .person-walk {
+          animation: person-bob 0.4s ease-in-out infinite;
         }
 
         .arm-front {
-          animation: swing-arm-front 0.25s ease-in-out infinite;
+          animation: swing-arm-front 0.3s ease-in-out infinite;
         }
 
         .arm-back {
-          animation: swing-arm-back 0.25s ease-in-out infinite;
+          animation: swing-arm-back 0.3s ease-in-out infinite;
         }
 
         .leg-front {
-          animation: swing-leg-front 0.25s ease-in-out infinite;
+          animation: swing-leg-front 0.3s ease-in-out infinite;
         }
 
         .leg-back {
-          animation: swing-leg-back 0.25s ease-in-out infinite;
+          animation: swing-leg-back 0.3s ease-in-out infinite;
         }
 
-        @keyframes scroll-clouds {
-          from { transform: translateX(0); }
-          to { transform: translateX(-200px); }
-        }
-
-        @keyframes scroll-birds {
-          from { transform: translateX(0); }
-          to { transform: translateX(-300px); }
-        }
-
-        @keyframes butterfly-float {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          25% { transform: translateY(-8px) translateX(4px); }
-          50% { transform: translateY(-4px) translateX(-4px); }
-          75% { transform: translateY(-10px) translateX(2px); }
-        }
-
-        @keyframes scroll-bg {
-          from { transform: translateX(0); }
-          to { transform: translateX(-25%); }
-        }
-
-        @keyframes scroll-trees {
-          from { transform: translateX(0); }
-          to { transform: translateX(-33.33%); }
-        }
-
-        @keyframes scroll-grass {
+        @keyframes scroll-horizontal {
           from { transform: translateX(0); }
           to { transform: translateX(-33.33%); }
         }
 
         @keyframes run-bounce {
-          0%, 100% { transform: translateY(0) rotate(-2deg); }
-          50% { transform: translateY(-8px) rotate(2deg); }
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+
+        @keyframes person-bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
         }
 
         @keyframes swing-arm-front {
@@ -363,23 +434,25 @@ export default function WalkingAnimation({ isActive, size = 160 }: WalkingAnimat
         }
 
         @keyframes swing-leg-front {
-          0%, 100% { transform: rotate(40deg); }
-          50% { transform: rotate(-40deg); }
+          0%, 100% { transform: rotate(35deg); }
+          50% { transform: rotate(-35deg); }
         }
 
         @keyframes swing-leg-back {
-          0%, 100% { transform: rotate(-40deg); }
-          50% { transform: rotate(40deg); }
+          0%, 100% { transform: rotate(-35deg); }
+          50% { transform: rotate(35deg); }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .clouds-layer,
-          .birds-layer,
-          .bg-trees-layer,
-          .trees-layer,
-          .grass-layer,
+          .buildings-far-layer,
+          .buildings-mid-layer,
+          .buildings-front-layer,
+          .road-markings,
+          .cars-layer,
+          .people-layer,
           .runner-bounce,
-          .butterfly-float,
+          .person-walk,
           .arm-front,
           .arm-back,
           .leg-front,

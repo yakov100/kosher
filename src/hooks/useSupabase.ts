@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js'
 import { getToday, getLast7Days, getLast30Days } from '@/lib/utils'
 import { useUserContext } from '@/providers/UserProvider'
 import useSWR, { mutate } from 'swr'
+import { format } from 'date-fns'
 
 // Create supabase client lazily
 function getSupabase() {
@@ -281,7 +282,7 @@ export function useWalking() {
     // Count backwards
     const checkDate = new Date(startDate)
     for (let i = 0; i < 30; i++) { // Check up to 30 days back
-      const dateStr = checkDate.toISOString().split('T')[0]
+      const dateStr = format(checkDate, 'yyyy-MM-dd')
       const record = sortedRecords.find(r => r.date === dateStr)
       
       if (record && record.minutes >= dailyGoal) {
@@ -453,7 +454,7 @@ export function useDailyContent() {
           .from('daily_tip_history')
           .select('tip_id')
           .eq('user_id', user.id)
-          .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+          .gte('shown_date', format(thirtyDaysAgo, 'yyyy-MM-dd'))
 
         const recentTipIds = recentTips?.map((t: { tip_id: string }) => t.tip_id) || []
 
@@ -515,7 +516,7 @@ export function useDailyContent() {
           .from('daily_challenge_history')
           .select('challenge_id')
           .eq('user_id', user.id)
-          .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+          .gte('shown_date', format(thirtyDaysAgo, 'yyyy-MM-dd'))
 
         const recentChallengeIds = recentChallenges?.map((c: { challenge_id: string }) => c.challenge_id) || []
 
@@ -576,7 +577,7 @@ export function useDailyContent() {
       const checkDate = new Date(today)
 
       for (let i = 0; i < 30; i++) {
-        const dateStr = checkDate.toISOString().split('T')[0]
+        const dateStr = format(checkDate, 'yyyy-MM-dd')
         const hasCompleted = completedChallenges.some((c: { shown_date: string }) => c.shown_date === dateStr)
         
         if (hasCompleted) {
@@ -684,7 +685,7 @@ export function useDailyContent() {
       .from('daily_challenge_history')
       .select('challenge_id')
       .eq('user_id', user.id)
-      .gte('shown_date', thirtyDaysAgo.toISOString().split('T')[0])
+      .gte('shown_date', format(thirtyDaysAgo, 'yyyy-MM-dd'))
 
     const recentChallengeIds = recentChallenges?.map((c: { challenge_id: string }) => c.challenge_id) || []
     const allExcludeIds = [...recentChallengeIds, ...excludeIds]

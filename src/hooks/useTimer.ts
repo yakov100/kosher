@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { format } from 'date-fns'
 
 const STORAGE_KEY = 'walking_timer_state'
 
@@ -39,7 +40,7 @@ export function useTimer(
         const parsed: TimerState = JSON.parse(saved)
         
         // Check if it's from today
-        const today = new Date().toISOString().split('T')[0]
+        const today = format(new Date(), 'yyyy-MM-dd')
         const savedDate = (JSON.parse(saved) as any).savedDate
         
         if (savedDate !== today) {
@@ -73,7 +74,7 @@ export function useTimer(
     if (!state.timerStarted) return
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = format(new Date(), 'yyyy-MM-dd')
       const toSave = {
         ...state,
         savedDate: today,
