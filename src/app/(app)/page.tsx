@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { formatHebrewDate, getToday } from '@/lib/utils'
 import { useWalking, useWeight, useSettings, useDailyContent } from '@/hooks/useSupabase'
 import { useGamification } from '@/hooks/useGamification'
@@ -11,8 +10,7 @@ import { CircleDashboard } from '@/components/dashboard/CircleDashboard'
 import { HistoryModal } from '@/components/dashboard/HistoryModal'
 import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { AchievementPopup, Confetti } from '@/components/gamification'
-import { Button } from '@/components/ui/Button'
-import { BarChart2, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 type ChallengeWithHistory = {
   id: string
@@ -30,7 +28,6 @@ type ChallengeWithHistory = {
 }
 
 export default function DashboardPage() {
-  const router = useRouter()
   const { records: walkingRecords, getTodayRecord, refetch: refetchRecords, addOrUpdateRecord, deleteRecord: deleteWalkingRecord } = useWalking()
   const { weights: weightRecords, getLatestWeight, refetch: refetchWeights, deleteWeight: deleteWeightRecord } = useWeight()
   const { settings, loading: settingsLoading } = useSettings()
@@ -175,19 +172,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Navigation to detailed stats */}
-      <div className="mt-8 px-8">
-        <Button 
-          variant="ghost" 
-          fullWidth 
-          onClick={() => router.push('/stats')}
-          className="flex items-center justify-center gap-2 py-6 text-lg"
-        >
-          <BarChart2 size={24} />
-          נתונים נוספים
-        </Button>
-      </div>
-
       {/* Daily Challenge - Compact */}
       {settings?.show_daily_challenge && (
         <div className="mt-4 px-4 space-y-3">
@@ -294,6 +278,7 @@ export default function DashboardPage() {
         onClose={() => setShowWalkingHistory(false)}
         type="walking"
         walkingRecords={walkingRecords}
+        dailyGoal={dailyGoal}
         onEditWalking={(record) => {
           setEditingWalking(record)
           setShowWalkingHistory(false)
@@ -313,6 +298,7 @@ export default function DashboardPage() {
         onClose={() => setShowWeightHistory(false)}
         type="weight"
         weightRecords={weightRecords}
+        dailyGoal={dailyGoal}
         onEditWeight={(record) => {
           setEditingWeight(record)
           setShowWeightHistory(false)

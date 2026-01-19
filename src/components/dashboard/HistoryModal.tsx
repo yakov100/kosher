@@ -2,9 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
-import { Footprints, Scale, Edit, Trash2, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, History } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { Footprints, Scale, Edit, Trash2, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, History, ChartBar } from 'lucide-react'
+import { formatDate, calculateMovingAverage } from '@/lib/utils'
+import { WalkingChart } from '@/components/steps/StepsChart'
+import { WeightChart } from '@/components/weight/WeightChart'
 import type { Tables } from '@/types/database'
+
+type TabType = 'history' | 'charts'
 
 interface HistoryModalProps {
   isOpen: boolean
@@ -17,6 +21,7 @@ interface HistoryModalProps {
   onDeleteWalking?: (id: string) => void
   onDeleteWeight?: (id: string) => void
   onAddNew: () => void
+  dailyGoal?: number
 }
 
 export function HistoryModal({
@@ -30,8 +35,10 @@ export function HistoryModal({
   onDeleteWalking,
   onDeleteWeight,
   onAddNew,
+  dailyGoal = 30,
 }: HistoryModalProps) {
   const isWalking = type === 'walking'
+  const [activeTab, setActiveTab] = useState<TabType>('history')
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -59,6 +66,28 @@ export function HistoryModal({
     return changes
   }, [sortedWeightRecords])
 
+  // Chart data for walking
+  const walkingChartData = useMemo(() => {
+    const data = walkingRecords
+      .map(r => ({ date: r.date, value: r.minutes }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    const withMovingAvg = calculateMovingAverage(data, 7)
+    return withMovingAvg.map(d => ({
+      date: d.date,
+      minutes: d.value,
+      movingAvg: d.movingAvg,
+      hasData: true
+    }))
+  }, [walkingRecords])
+
+  // Chart data for weight
+  const weightChartData = useMemo(() => {
+    const data = weightRecords
+      .map(w => ({ date: w.recorded_at.split('T')[0], value: Number(w.weight) }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    return calculateMovingAverage(data, 7)
+  }, [weightRecords])
+
   const title = isWalking ? 'היסטוריית הליכות' : 'היסטוריית משקל'
   const emptyMessage = isWalking ? 'אין רשומות הליכה עדיין' : 'אין רשומות משקל עדיין'
   const emptyEmoji = isWalking ? '🚶' : '⚖️'
@@ -80,6 +109,11 @@ export function HistoryModal({
     }
   }
 
+  const tabs = [
+    { id: 'history' as TabType, label: 'היסטוריה', icon: History },
+    { id: 'charts' as TabType, label: 'גרפים', icon: ChartBar },
+  ]
+
   return (
     <Modal 
       isOpen={isOpen} 
@@ -88,7 +122,32 @@ export function HistoryModal({
       size="lg"
       icon={isWalking ? <Footprints className="w-6 h-6 text-white" /> : <Scale className="w-6 h-6 text-white" />}
     >
-      {/* Add New Button - Elegant */}
+      {/* Tab Navigation */}
+      <div className="flex gap-2 p-1 bg-white/95 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 mb-5">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`
+              flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl
+              font-semibold text-sm transition-all duration-300
+              ${activeTab === tab.id 
+                ? `${isWalking 
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500' 
+                    : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                  } text-white shadow-md scale-[1.02]` 
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+              }
+            `}
+          >
+            <tab.icon size={18} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Add New Button - Elegant (only in history tab) */}
+      {activeTab === 'history' && (
       <button
         onClick={onAddNew}
         className={`
@@ -105,7 +164,11 @@ export function HistoryModal({
         <Plus size={18} />
         <span>{isWalking ? 'הוסף הליכה חדשה' : 'הוסף משקל חדש'}</span>
       </button>
+      )}
 
+      {/* History Tab Content */}
+      {activeTab === 'history' && (
+      <>
       {/* Records List */}
       <div className="max-h-[60vh] overflow-y-auto space-y-2.5 custom-scrollbar">
         {!hasRecords ? (
@@ -321,6 +384,70 @@ export function HistoryModal({
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium">
             <span>מציג {records.length} רשומות</span>
           </div>
+        </div>
+      )}
+      </>
+      )}
+
+      {/* Charts Tab Content */}
+      {activeTab === 'charts' && (
+        <div className="space-y-6">
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+          }
+        `}</style>
+        <div className="animate-fadeIn">
+          {isWalking ? (
+            walkingChartData.length > 0 ? (
+              <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-xl bg-emerald-100">
+                    <Footprints className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800">הליכה</h3>
+                    <p className="text-xs text-slate-600">30 ימים אחרונים</p>
+                  </div>
+                </div>
+                <WalkingChart data={walkingChartData} goal={dailyGoal} />
+              </div>
+            ) : (
+              <div className="text-center py-16 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-50 border border-slate-200">
+                <div className="text-5xl mb-4">📊</div>
+                <div className="text-slate-600 font-medium">
+                  אין מספיק נתונים להצגת גרף
+                </div>
+              </div>
+            )
+          ) : (
+            weightChartData.length > 0 ? (
+              <div className="p-5 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-xl bg-blue-100">
+                    <Scale className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800">משקל</h3>
+                    <p className="text-xs text-slate-600">30 ימים אחרונים</p>
+                  </div>
+                </div>
+                <WeightChart data={weightChartData} />
+              </div>
+            ) : (
+              <div className="text-center py-16 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-50 border border-slate-200">
+                <div className="text-5xl mb-4">📊</div>
+                <div className="text-slate-600 font-medium">
+                  אין מספיק נתונים להצגת גרף
+                </div>
+              </div>
+            )
+          )}
+        </div>
         </div>
       )}
     </Modal>
