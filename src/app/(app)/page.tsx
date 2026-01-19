@@ -296,6 +296,8 @@ export default function DashboardPage() {
         onDeleteWalking={async (id) => {
           await deleteWalkingRecord(id)
           await refetchRecords()
+          // Update streak after deletion to recalculate
+          await updateStreak(getToday())
         }}
         onAddNew={() => {
           setShowWalkingHistory(false)
