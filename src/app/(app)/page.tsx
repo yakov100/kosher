@@ -8,6 +8,7 @@ import { WalkingEntryModal } from '@/components/steps/StepsEntryModal'
 import { WeightEntryModal } from '@/components/weight/WeightEntryModal'
 import { CircleDashboard } from '@/components/dashboard/CircleDashboard'
 import { HistoryModal } from '@/components/dashboard/HistoryModal'
+import { GamificationModal } from '@/components/dashboard/GamificationModal'
 import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
 import { AchievementPopup, Confetti } from '@/components/gamification'
 import { Plus } from 'lucide-react'
@@ -33,6 +34,8 @@ export default function DashboardPage() {
   const { settings, loading: settingsLoading } = useSettings()
   const { 
     gamification, 
+    achievements,
+    userAchievements,
     levelInfo, 
     newAchievement, 
     clearNewAchievement,
@@ -49,6 +52,7 @@ export default function DashboardPage() {
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [showWalkingHistory, setShowWalkingHistory] = useState(false)
   const [showWeightHistory, setShowWeightHistory] = useState(false)
+  const [showGamificationModal, setShowGamificationModal] = useState(false)
   const [editingWalking, setEditingWalking] = useState<typeof walkingRecords[0] | null>(null)
   const [editingWeight, setEditingWeight] = useState<typeof weightRecords[0] | null>(null)
   const [isAddingChallenge, setIsAddingChallenge] = useState(false)
@@ -57,9 +61,10 @@ export default function DashboardPage() {
   const latestWeight = getLatestWeight()
   const dailyGoal = settings?.daily_walking_minutes_goal || 30
 
-  const handleWalkingUpdate = async () => {
+  const handleWalkingUpdate = async (recordDate?: string) => {
     await refetchRecords()
-    await updateStreak(new Date().toISOString())
+    // Use the provided date or fall back to today
+    await updateStreak(recordDate || getToday())
     await incrementStat('steps')
     
     const updatedTodayRecord = getTodayRecord()
@@ -87,9 +92,10 @@ export default function DashboardPage() {
     }
   }
 
-  const handleWeightUpdate = async () => {
+  const handleWeightUpdate = async (recordDate?: string) => {
     await refetchWeights()
-    await updateStreak(new Date().toISOString())
+    // Use the provided date or fall back to today
+    await updateStreak(recordDate || new Date().toISOString())
     await incrementStat('weight')
     await addXP(15)
   }
@@ -168,16 +174,18 @@ export default function DashboardPage() {
           onWalkingAddClick={() => setShowWalkingModal(true)}
           onWeightCircleClick={() => setShowWeightHistory(true)}
           onWeightAddClick={() => setShowWeightModal(true)}
+          onGamificationCircleClick={() => setShowGamificationModal(true)}
           onTimerStop={handleTimerStop}
         />
       </div>
 
       {/* Daily Challenge - Compact */}
       {settings?.show_daily_challenge && (
-        <div className="mt-4 px-4 space-y-3">
+        <div className="mt-4">
           {/* Challenges List */}
-          {challenges.length > 0 && challenges.map((ch: ChallengeWithHistory) => (
-            <ChallengeCard
+          <div className="px-4 space-y-3 flex flex-col items-center">
+            {challenges.length > 0 && challenges.map((ch: ChallengeWithHistory) => (
+              <ChallengeCard
               key={ch.historyId}
               challenge={ch}
               onComplete={() => {
@@ -209,10 +217,11 @@ export default function DashboardPage() {
               xpReward={50}
               compact
             />
-          ))}
+            ))}
+          </div>
 
           {/* Add Challenge Button - Centered below challenges */}
-          <div className="flex justify-center pt-2">
+          <div className="px-4 flex justify-center pt-1">
             <button
               onClick={handleAddNewChallenge}
               disabled={isAddingChallenge}
@@ -251,10 +260,10 @@ export default function DashboardPage() {
           setShowWalkingModal(false)
           setEditingWalking(null)
         }}
-        onSuccess={() => {
+        onSuccess={(recordDate) => {
           setShowWalkingModal(false)
           setEditingWalking(null)
-          handleWalkingUpdate()
+          handleWalkingUpdate(recordDate)
         }}
         existingRecord={editingWalking ?? undefined}
       />
@@ -264,10 +273,10 @@ export default function DashboardPage() {
           setShowWeightModal(false)
           setEditingWeight(null)
         }}
-        onSuccess={() => {
+        onSuccess={(recordDate) => {
           setShowWeightModal(false)
           setEditingWeight(null)
-          handleWeightUpdate()
+          handleWeightUpdate(recordDate)
         }}
         existingRecord={editingWeight ?? undefined}
       />
@@ -313,6 +322,17 @@ export default function DashboardPage() {
           setShowWeightModal(true)
         }}
       />
+
+      {/* Gamification Modal */}
+      {gamification && (
+        <GamificationModal
+          isOpen={showGamificationModal}
+          onClose={() => setShowGamificationModal(false)}
+          gamification={gamification}
+          achievements={achievements}
+          userAchievements={userAchievements}
+        />
+      )}
     </div>
   )
 }

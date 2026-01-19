@@ -12,7 +12,7 @@ interface WeightEntryModalProps {
   isOpen: boolean
   onClose: () => void
   existingRecord?: Tables<'weight_records'>
-  onSuccess: () => void
+  onSuccess: (recordDate: string) => void
   onDelete?: () => void
 }
 
@@ -82,7 +82,7 @@ export function WeightEntryModal({
       } else {
         await addWeight(weightNum, recordedAt, note || undefined)
       }
-      onSuccess()
+      onSuccess(recordedAt)
     } catch (err) {
       console.error(err)
       setError('שגיאה בשמירת הנתונים')

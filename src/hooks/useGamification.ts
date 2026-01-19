@@ -274,40 +274,84 @@ export function useGamification() {
     return levelUp
   }
 
-  // Update streak
+  // Update streak based on walking activity records only
   const updateStreak = async (recordedDate: string) => {
     if (!user || !gamification) return
 
+    // Extract date from recordedDate (handle both ISO timestamps and date strings)
+    const activityDate = recordedDate.includes('T') 
+      ? format(new Date(recordedDate), 'yyyy-MM-dd')
+      : recordedDate
+
+    // Fetch only walking records to calculate the streak
+    const { data: walkingRecords } = await getSupabase()
+      .from('steps_records')
+      .select('date')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+
+    // Get all unique walking dates
+    const allActivityDates = (walkingRecords || []).map((r: { date: string }) => r.date)
+
+    if (allActivityDates.length === 0) {
+      // No activities at all
+      return 0
+    }
+
+    // Calculate current streak from the most recent date backwards
+    const mostRecentDate = allActivityDates[0]
     const today = getToday()
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
     const yesterdayStr = format(yesterday, 'yyyy-MM-dd')
 
-    let newStreak = gamification.current_streak
-    let newLongest = gamification.longest_streak
+    // Streak is valid only if most recent activity was today or yesterday
+    if (mostRecentDate !== today && mostRecentDate !== yesterdayStr) {
+      // Streak is broken - most recent activity is too old
+      const newGamification = { 
+        ...gamification,
+        current_streak: 0,
+        last_activity_date: mostRecentDate,
+        updated_at: new Date().toISOString()
+      }
+      
+      mutate({ ...data, gamification: newGamification } as any, false)
 
-    // If last activity was yesterday, increment streak
-    if (gamification.last_activity_date === yesterdayStr) {
-      newStreak = gamification.current_streak + 1
-    } 
-    // If last activity was today, keep streak
-    else if (gamification.last_activity_date === today) {
-      // Do nothing
-    }
-    // Otherwise, start new streak
-    else {
-      newStreak = 1
+      await getSupabase()
+        .from('user_gamification')
+        .update({ 
+          current_streak: 0,
+          last_activity_date: mostRecentDate,
+          updated_at: new Date().toISOString()
+        } as never)
+        .eq('user_id', user.id)
+
+      mutate()
+      return 0
     }
 
-    if (newStreak > newLongest) {
-      newLongest = newStreak
+    // Calculate consecutive days starting from most recent
+    let streak = 0
+    let checkDate = new Date(mostRecentDate)
+    
+    for (let i = 0; i < 365; i++) {
+      const dateStr = format(checkDate, 'yyyy-MM-dd')
+      
+      if (allActivityDates.includes(dateStr)) {
+        streak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
     }
+
+    const newLongest = Math.max(streak, gamification.longest_streak)
 
     const newGamification = { 
       ...gamification,
-      current_streak: newStreak,
+      current_streak: streak,
       longest_streak: newLongest,
-      last_activity_date: today,
+      last_activity_date: mostRecentDate,
       updated_at: new Date().toISOString()
     }
     
@@ -317,9 +361,9 @@ export function useGamification() {
     const { data: updatedData } = await getSupabase()
       .from('user_gamification')
       .update({ 
-        current_streak: newStreak,
+        current_streak: streak,
         longest_streak: newLongest,
-        last_activity_date: today,
+        last_activity_date: mostRecentDate,
         updated_at: new Date().toISOString()
       } as never)
       .eq('user_id', user.id)
@@ -333,7 +377,7 @@ export function useGamification() {
       mutate()
     }
 
-    return newStreak
+    return streak
   }
 
   // Increment stats

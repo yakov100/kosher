@@ -14,7 +14,7 @@ interface WalkingEntryModalProps {
   onClose: () => void
   existingRecord?: Tables<'steps_records'>
   defaultDate?: string
-  onSuccess: () => void
+  onSuccess: (recordDate: string) => void
   onDelete?: () => void
 }
 
@@ -70,7 +70,7 @@ export function WalkingEntryModal({
     setLoading(true)
     try {
       await addOrUpdateRecord(date, minutesNum, note || undefined)
-      onSuccess()
+      onSuccess(date)
     } catch (err) {
       console.error(err)
       setError('שגיאה בשמירת הנתונים')

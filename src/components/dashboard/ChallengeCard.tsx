@@ -125,18 +125,18 @@ export function ChallengeCard({
       <button
         onClick={() => setExpanded(true)}
         className={`
-          w-full text-right p-4 rounded-2xl 
+          w-full max-w-md text-right p-3 rounded-2xl 
           bg-gradient-to-br ${category.gradient}
           border border-[var(--border)] hover:border-[var(--accent)]/50
           transition-all duration-300 hover:scale-[1.01]
         `}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl bg-[var(--accent)]/20`}>
-              <Target className="w-5 h-5 text-[var(--accent)]" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className={`p-2 rounded-xl bg-[var(--accent)]/20 flex-shrink-0`}>
+              <Target className="w-4 h-4 text-[var(--accent)]" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-semibold text-sm text-[var(--foreground)]">
                 אתגר היום
               </div>
@@ -145,15 +145,15 @@ export function ChallengeCard({
               </div>
             </div>
           </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {challenge.completed ? (
-                <div className="p-2 rounded-lg bg-emerald-200/40 border border-emerald-300/50">
-                  <Check className="w-5 h-5 text-emerald-600" />
+                <div className="p-1.5 rounded-lg bg-emerald-200/40 border border-emerald-300/50">
+                  <Check className="w-4 h-4 text-emerald-600" />
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-[var(--accent)]">+{xpReward} XP</span>
-                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                  <ChevronDown size={16} className="text-[var(--muted-foreground)]" />
                 </div>
               )}
             </div>
@@ -168,6 +168,7 @@ export function ChallengeCard({
       
       <div 
         className={`
+          w-full max-w-md
           relative overflow-hidden rounded-3xl
           bg-gradient-to-br ${category.gradient}
           border border-[var(--border)]
