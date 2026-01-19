@@ -184,8 +184,10 @@ export function WalkingChart({ data, goal }: WalkingChartProps) {
 // Backward compatibility
 export function StepsChart(props: { data: { date: string; steps?: number; minutes?: number; goal: number; hasData: boolean }[]; goal: number }) {
   const convertedData = props.data.map(d => ({
-    ...d,
+    date: d.date,
     minutes: d.minutes ?? d.steps ?? 0,
+    movingAvg: null,
+    hasData: d.hasData,
   }))
   return <WalkingChart data={convertedData} goal={props.goal} />
 }
