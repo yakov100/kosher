@@ -257,6 +257,8 @@ export interface Database {
           total_weight_logged: number
           total_challenges_completed: number
           last_activity_date: string | null
+          total_treats_earned: number
+          xp_since_last_treat: number
           created_at: string
           updated_at: string
         }
@@ -271,6 +273,8 @@ export interface Database {
           total_weight_logged?: number
           total_challenges_completed?: number
           last_activity_date?: string | null
+          total_treats_earned?: number
+          xp_since_last_treat?: number
           created_at?: string
           updated_at?: string
         }
@@ -285,6 +289,8 @@ export interface Database {
           total_weight_logged?: number
           total_challenges_completed?: number
           last_activity_date?: string | null
+          total_treats_earned?: number
+          xp_since_last_treat?: number
           created_at?: string
           updated_at?: string
         }

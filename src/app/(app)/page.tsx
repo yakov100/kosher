@@ -10,7 +10,7 @@ import { CircleDashboard } from '@/components/dashboard/CircleDashboard'
 import { HistoryModal } from '@/components/dashboard/HistoryModal'
 import { GamificationModal } from '@/components/dashboard/GamificationModal'
 import { ChallengeCard } from '@/components/dashboard/ChallengeCard'
-import { AchievementPopup, Confetti } from '@/components/gamification'
+import { AchievementPopup, Confetti, TreatXPCard, TreatUnlockedCard } from '@/components/gamification'
 import { Plus } from 'lucide-react'
 
 type ChallengeWithHistory = {
@@ -39,6 +39,8 @@ export default function DashboardPage() {
     levelInfo, 
     newAchievement, 
     clearNewAchievement,
+    newTreat,
+    claimTreat,
     updateStreak,
     incrementStat,
     addXP,
@@ -105,7 +107,10 @@ export default function DashboardPage() {
       if (challenge?.historyId) {
         await completeChallenge(challenge.historyId)
         await incrementStat('challenge')
-        await addXP(50)
+        // Calculate XP based on challenge difficulty
+        const difficultyXP: Record<string, number> = { easy: 30, medium: 50, hard: 75 }
+        const xpAmount = difficultyXP[challenge.difficulty] || 50
+        await addXP(xpAmount)
         setShowGoalConfetti(true)
       }
     } catch (error) {
@@ -146,10 +151,6 @@ export default function DashboardPage() {
 
   return (
     <div className="pb-20 min-h-[80vh] flex flex-col">
-      {/* Confetti & Popups */}
-      <Confetti active={showGoalConfetti} onComplete={() => setShowGoalConfetti(false)} />
-      <AchievementPopup achievement={newAchievement} onClose={clearNewAchievement} />
-
       {/* Date Header */}
       <header className="py-8 text-center">
         <h1 className="text-2xl font-semibold text-white mb-2">{formatHebrewDate(today)}</h1>
@@ -179,6 +180,16 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Treat XP Progress Card */}
+      {gamification && gamification.xp_since_last_treat < 700 && (
+        <div className="px-4 mt-4">
+          <TreatXPCard
+            currentXP={gamification.xp_since_last_treat || 0}
+            totalTreatsEarned={gamification.total_treats_earned || 0}
+          />
+        </div>
+      )}
+
       {/* Daily Challenge - Compact */}
       {settings?.show_daily_challenge && (
         <div className="mt-4">
@@ -192,7 +203,10 @@ export default function DashboardPage() {
                 if (ch.historyId) {
                   completeChallenge(ch.historyId).then(() => {
                     incrementStat('challenge')
-                    addXP(50)
+                    // Calculate XP based on challenge difficulty
+                    const difficultyXP: Record<string, number> = { easy: 30, medium: 50, hard: 75 }
+                    const xpAmount = difficultyXP[ch.difficulty] || 50
+                    addXP(xpAmount)
                     setShowGoalConfetti(true)
                   }).catch(error => {
                     console.error('Error completing challenge:', error)
@@ -214,7 +228,6 @@ export default function DashboardPage() {
                 }
               }}
               challengeStreak={challengeStreak}
-              xpReward={50}
               compact
             />
             ))}
@@ -334,6 +347,25 @@ export default function DashboardPage() {
           achievements={achievements}
           userAchievements={userAchievements}
         />
+      )}
+
+      {/* Treat Unlocked Popup */}
+      {newTreat && gamification && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <TreatUnlockedCard
+              totalTreatsEarned={gamification.total_treats_earned || 0}
+              xpEarned={700}
+              onClaim={claimTreat}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Confetti and Achievement */}
+      <Confetti active={showGoalConfetti} onComplete={() => setShowGoalConfetti(false)} />
+      {newAchievement && (
+        <AchievementPopup achievement={newAchievement} onClose={clearNewAchievement} />
       )}
     </div>
   )

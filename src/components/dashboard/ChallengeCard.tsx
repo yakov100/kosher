@@ -69,21 +69,24 @@ const categoryConfig: Record<string, { icon: typeof Footprints; label: string; g
   },
 }
 
-const difficultyConfig: Record<string, { label: string; color: string; bg: string }> = {
+const difficultyConfig: Record<string, { label: string; color: string; bg: string; xp: number }> = {
   easy: { 
     label: 'קל', 
     color: 'text-emerald-600',
-    bg: 'bg-emerald-200/40 border-emerald-300/50'
+    bg: 'bg-emerald-200/40 border-emerald-300/50',
+    xp: 30
   },
   medium: { 
     label: 'בינוני', 
     color: 'text-amber-600',
-    bg: 'bg-amber-200/40 border-amber-300/50'
+    bg: 'bg-amber-200/40 border-amber-300/50',
+    xp: 50
   },
   hard: { 
     label: 'מאתגר', 
     color: 'text-rose-600',
-    bg: 'bg-rose-200/40 border-rose-300/50'
+    bg: 'bg-rose-200/40 border-rose-300/50',
+    xp: 75
   },
 }
 
@@ -93,7 +96,7 @@ export function ChallengeCard({
   onReplace,
   onRemove,
   challengeStreak = 0,
-  xpReward = 50,
+  xpReward,
   compact = false 
 }: ChallengeCardProps) {
   const [isCompleting, setIsCompleting] = useState(false)
@@ -105,6 +108,9 @@ export function ChallengeCard({
   const category = categoryConfig[challenge.category] || categoryConfig.lifestyle
   const difficulty = difficultyConfig[challenge.difficulty] || difficultyConfig.easy
   const CategoryIcon = category.icon
+  
+  // Use provided xpReward or calculate from difficulty
+  const finalXPReward = xpReward ?? difficulty.xp
 
   const handleComplete = async () => {
     if (challenge.completed || isCompleting) return
@@ -152,7 +158,7 @@ export function ChallengeCard({
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-bold text-[var(--accent)]">+{xpReward} XP</span>
+                  <span className="text-xs font-bold text-[var(--accent)]">+{finalXPReward} XP</span>
                   <ChevronDown size={16} className="text-[var(--muted-foreground)]" />
                 </div>
               )}
@@ -275,7 +281,7 @@ export function ChallengeCard({
               {/* XP Reward */}
               <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-200/40 border border-violet-300/50">
                 <Zap size={12} className="text-violet-600" />
-                <span className="text-xs font-bold text-violet-600">+{xpReward} XP</span>
+                <span className="text-xs font-bold text-violet-600">+{finalXPReward} XP</span>
               </div>
             </div>
           </div>
@@ -314,7 +320,7 @@ export function ChallengeCard({
                   </div>
                   <div>
                     <span className="font-bold text-emerald-600 text-lg">בוצע בהצלחה!</span>
-                    <p className="text-sm text-emerald-600/80">כל הכבוד, קיבלת +{xpReward} XP 🎉</p>
+                    <p className="text-sm text-emerald-600/80">כל הכבוד, קיבלת +{finalXPReward} XP 🎉</p>
                   </div>
                 </div>
                 <Check size={28} className="text-emerald-600" />

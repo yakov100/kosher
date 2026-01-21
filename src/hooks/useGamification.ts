@@ -22,6 +22,8 @@ interface UserGamification {
   total_weight_logged: number
   total_challenges_completed: number
   last_activity_date: string | null
+  total_treats_earned: number
+  xp_since_last_treat: number
 }
 
 interface Achievement {
@@ -112,6 +114,7 @@ export function getMotivationalMessage(gamification: UserGamification | null): s
 export function useGamification() {
   const { user } = useUserContext()
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null)
+  const [newTreat, setNewTreat] = useState<boolean>(false)
 
   const fetchGamificationData = async () => {
     if (!user) return null
@@ -234,7 +237,7 @@ export function useGamification() {
   const achievements = data?.achievements || []
   const userAchievements = data?.userAchievements || []
 
-  // Add XP and check for level up
+  // Add XP and check for level up and treat unlock
   const addXP = async (amount: number) => {
     if (!user || !gamification) return
 
@@ -242,10 +245,18 @@ export function useGamification() {
     const { level: newLevel } = getLevelFromXP(newTotalXP)
     const levelUp = newLevel > gamification.level
 
+    // Track XP for treat system (700 XP = 1 treat)
+    const newXPSinceLastTreat = (gamification.xp_since_last_treat || 0) + amount
+    const treatUnlocked = newXPSinceLastTreat >= 700
+    const treatsToAdd = Math.floor(newXPSinceLastTreat / 700)
+    const finalXPSinceLastTreat = treatUnlocked ? newXPSinceLastTreat % 700 : newXPSinceLastTreat
+
     const newGamification = { 
       ...gamification, 
       total_xp: newTotalXP, 
       level: newLevel,
+      xp_since_last_treat: finalXPSinceLastTreat,
+      total_treats_earned: (gamification.total_treats_earned || 0) + treatsToAdd,
       updated_at: new Date().toISOString()
     }
 
@@ -257,6 +268,8 @@ export function useGamification() {
       .update({ 
         total_xp: newTotalXP,
         level: newLevel,
+        xp_since_last_treat: finalXPSinceLastTreat,
+        total_treats_earned: (gamification.total_treats_earned || 0) + treatsToAdd,
         updated_at: new Date().toISOString()
       } as never)
       .eq('user_id', user.id)
@@ -266,12 +279,23 @@ export function useGamification() {
     if (updatedData) {
       // Check for level achievements
       await checkAchievements({ ...(updatedData as UserGamification), level: newLevel }, achievements, userAchievements)
+      
+      // Trigger treat notification if unlocked
+      if (treatUnlocked) {
+        setNewTreat(true)
+      }
+      
       mutate() // Revalidate to get fresh state including any new achievements
     } else {
         mutate() // Revert on error
     }
 
     return levelUp
+  }
+
+  // Claim treat - user acknowledges they got the treat
+  const claimTreat = () => {
+    setNewTreat(false)
   }
 
   // Update streak based on walking activity records only
@@ -469,11 +493,21 @@ export function useGamification() {
           .from('user_achievements')
           .insert({ user_id: user.id, achievement_id: achievement.id } as never)
 
-        // Add XP reward
-        // Note: calling addXP here would be recursive/complicated, so we just update XP manually or call a separate helper
-        // Ideally addXP logic should be separated from the hook state logic
+        // Add XP reward from achievement
+        const newTotalXP = stats.total_xp + achievement.xp_reward
+        const { level: newLevel } = getLevelFromXP(newTotalXP)
         
-        // For now, let's just trigger the notification
+        await getSupabase()
+          .from('user_gamification')
+          .update({ 
+            total_xp: newTotalXP,
+            level: newLevel,
+            xp_since_last_treat: (stats.xp_since_last_treat || 0) + achievement.xp_reward,
+            updated_at: new Date().toISOString()
+          } as never)
+          .eq('user_id', user.id)
+        
+        // Trigger the notification
         setNewAchievement(achievement)
         newUnlocked.push(achievement)
       }
@@ -497,6 +531,8 @@ export function useGamification() {
     loading: isLoading,
     newAchievement,
     clearNewAchievement,
+    newTreat,
+    claimTreat,
     levelInfo,
     motivationalMessage,
     addXP,

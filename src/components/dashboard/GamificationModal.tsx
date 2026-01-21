@@ -1,7 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/ui/Modal'
-import { Trophy, Flame, Star, Award, X } from 'lucide-react'
+import { Trophy, Flame, Star, Award, X, Gift } from 'lucide-react'
 import { getLevelFromXP } from '@/hooks/useGamification'
 
 interface GamificationModalProps {
@@ -15,6 +15,8 @@ interface GamificationModalProps {
     total_walking_minutes_logged: number
     total_weight_logged: number
     total_challenges_completed: number
+    total_treats_earned?: number
+    xp_since_last_treat?: number
   }
   achievements: unknown[]
   userAchievements: unknown[]
@@ -114,6 +116,29 @@ export function GamificationModal({
               <div className="text-2xl font-black text-gray-800">{completedAchievements}/{totalAchievements}</div>
             </div>
           </div>
+
+          {/* Treats Counter - if any treats earned */}
+          {gamification.total_treats_earned && gamification.total_treats_earned > 0 && (
+            <div className="bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 rounded-xl p-4 border-2 border-amber-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500">
+                    <Gift className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-gray-600 mb-0.5">פינוקים שקיבלת</div>
+                    <div className="text-3xl font-black text-amber-700">{gamification.total_treats_earned}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-medium text-gray-600 mb-0.5">עד הבא</div>
+                  <div className="text-lg font-bold text-amber-600">
+                    {700 - (gamification.xp_since_last_treat || 0)} XP
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Streak Info - if active */}
           {gamification.current_streak > 0 && (
