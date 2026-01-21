@@ -29,6 +29,7 @@ export default function StatsPage() {
   const { 
     updateStreak,
     incrementStat,
+    addXP,
     loading: gamificationLoading 
   } = useGamification()
   
@@ -142,16 +143,30 @@ export default function StatsPage() {
       .slice(0, 20)
   }, [records, weights])
 
-  const handleWalkingUpdate = async (recordDate?: string) => {
+  const handleWalkingUpdate = async (recordDate?: string, previousMinutes?: number) => {
+    const beforeMinutes = previousMinutes || 0
     await refetchRecords()
     await updateStreak(recordDate || getToday())
     await incrementStat('steps')
+    
+    // Calculate the difference in minutes to give proportional XP
+    const afterMinutes = records.find(r => r.date === recordDate)?.minutes || 0
+    const minutesDifference = afterMinutes - beforeMinutes
+    
+    // Give XP proportional to walking time added (1 XP per 2 minutes)
+    if (minutesDifference > 0) {
+      const xpAmount = Math.floor(minutesDifference / 2)
+      if (xpAmount > 0) {
+        await addXP(xpAmount)
+      }
+    }
   }
 
   const handleWeightUpdate = async (recordDate?: string) => {
     await refetchWeights()
     await updateStreak(recordDate || new Date().toISOString())
     await incrementStat('weight')
+    await addXP(15)
   }
 
   const handleDeleteActivity = async (activity: typeof activities[0]) => {
@@ -160,6 +175,8 @@ export default function StatsPage() {
       if (activity.type === 'walking') {
         await deleteWalkingRecord((activity.record as Tables<'steps_records'>).id)
         await refetchRecords()
+        // Update streak after deletion to recalculate
+        await updateStreak(getToday())
       } else {
         await deleteWeight((activity.record as Tables<'weight_records'>).id)
         await refetchWeights()
@@ -407,9 +424,10 @@ export default function StatsPage() {
         }}
         existingRecord={editWalkingRecord}
         onSuccess={(recordDate) => {
+          const previousMinutes = editWalkingRecord?.minutes || 0
           setShowWalkingModal(false)
           setEditWalkingRecord(undefined)
-          handleWalkingUpdate(recordDate)
+          handleWalkingUpdate(recordDate, previousMinutes)
         }}
         onDelete={() => {
           setEditWalkingRecord(undefined)

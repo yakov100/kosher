@@ -55,6 +55,7 @@ export default function DashboardPage() {
   const [showWalkingHistory, setShowWalkingHistory] = useState(false)
   const [showWeightHistory, setShowWeightHistory] = useState(false)
   const [showGamificationModal, setShowGamificationModal] = useState(false)
+  const [showTreatProgress, setShowTreatProgress] = useState(false)
   const [editingWalking, setEditingWalking] = useState<typeof walkingRecords[0] | null>(null)
   const [editingWeight, setEditingWeight] = useState<typeof weightRecords[0] | null>(null)
   const [isAddingChallenge, setIsAddingChallenge] = useState(false)
@@ -63,14 +64,29 @@ export default function DashboardPage() {
   const latestWeight = getLatestWeight()
   const dailyGoal = settings?.daily_walking_minutes_goal || 30
 
-  const handleWalkingUpdate = async (recordDate?: string) => {
+  const handleWalkingUpdate = async (recordDate?: string, previousMinutes?: number) => {
+    const beforeMinutes = previousMinutes ?? (recordDate === getToday() ? (getTodayRecord()?.minutes || 0) : 0)
+    const wasAboveGoal = beforeMinutes >= dailyGoal
+    
     await refetchRecords()
     // Use the provided date or fall back to today
     await updateStreak(recordDate || getToday())
     await incrementStat('steps')
     
     const updatedTodayRecord = getTodayRecord()
-    if (updatedTodayRecord && updatedTodayRecord.minutes >= dailyGoal) {
+    const afterMinutes = updatedTodayRecord?.minutes || 0
+    const minutesAdded = afterMinutes - beforeMinutes
+    
+    // Give XP proportional to walking time added (1 XP per 2 minutes)
+    if (minutesAdded > 0) {
+      const xpAmount = Math.floor(minutesAdded / 2)
+      if (xpAmount > 0) {
+        await addXP(xpAmount)
+      }
+    }
+    
+    // Bonus XP if reached goal for the first time today
+    if (recordDate === getToday() && !wasAboveGoal && afterMinutes >= dailyGoal) {
       setShowGoalConfetti(true)
       await addXP(25)
     }
@@ -86,7 +102,7 @@ export default function DashboardPage() {
       const newTotalMinutes = currentMinutes + elapsedMinutes
 
       await addOrUpdateRecord(today, newTotalMinutes)
-      await handleWalkingUpdate()
+      await handleWalkingUpdate(today, currentMinutes)
     } catch (error: unknown) {
       // Properly log Supabase errors which don't serialize with console.error
       const err = error as { message?: string; code?: string; details?: string }
@@ -180,16 +196,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Treat XP Progress Card */}
-      {gamification && gamification.xp_since_last_treat < 700 && (
-        <div className="px-4 mt-4">
-          <TreatXPCard
-            currentXP={gamification.xp_since_last_treat || 0}
-            totalTreatsEarned={gamification.total_treats_earned || 0}
-          />
-        </div>
-      )}
-
       {/* Daily Challenge - Compact */}
       {settings?.show_daily_challenge && (
         <div className="mt-4">
@@ -233,8 +239,9 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Add Challenge Button - Centered below challenges */}
-          <div className="px-4 flex justify-center pt-1">
+          {/* Action Buttons - Centered below challenges */}
+          <div className="px-4 flex justify-center items-center gap-3 pt-1">
+            {/* Add Challenge Button */}
             <button
               onClick={handleAddNewChallenge}
               disabled={isAddingChallenge}
@@ -262,6 +269,46 @@ export default function DashboardPage() {
                 <Plus size={20} className="relative z-10 text-white" />
               )}
             </button>
+
+            {/* Treat Progress Button */}
+            {gamification && gamification.xp_since_last_treat < 700 && (
+              <button
+                onClick={() => setShowTreatProgress(true)}
+                aria-label="הצג מסלול פינוק"
+                title="הצג מסלול פינוק"
+                className="
+                  group relative w-12 h-12 rounded-full
+                  overflow-hidden
+                  transition-all duration-300
+                  hover:scale-110 active:scale-95
+                  flex items-center justify-center
+                "
+              >
+                {/* Button background gradient - amber/orange colors */}
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 bg-[length:200%_100%] group-hover:animate-shimmer" />
+                
+                {/* Glow effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl bg-amber-500/50 transition-opacity duration-300" />
+                
+                {/* Button content - Gift icon */}
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="relative z-10 w-5 h-5 text-white"
+                >
+                  <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                  <rect x="2" y="7" width="20" height="5"></rect>
+                  <line x1="12" y1="22" x2="12" y2="7"></line>
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -274,9 +321,10 @@ export default function DashboardPage() {
           setEditingWalking(null)
         }}
         onSuccess={(recordDate) => {
+          const previousMinutes = editingWalking?.minutes || 0
           setShowWalkingModal(false)
           setEditingWalking(null)
-          handleWalkingUpdate(recordDate)
+          handleWalkingUpdate(recordDate, previousMinutes)
         }}
         existingRecord={editingWalking ?? undefined}
       />
@@ -347,6 +395,29 @@ export default function DashboardPage() {
           achievements={achievements}
           userAchievements={userAchievements}
         />
+      )}
+
+      {/* Treat Progress Modal */}
+      {showTreatProgress && gamification && gamification.xp_since_last_treat < 700 && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full relative">
+            {/* Close button */}
+            <button
+              onClick={() => setShowTreatProgress(false)}
+              className="absolute -top-2 -left-2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+              aria-label="סגור"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <TreatXPCard
+              currentXP={gamification.xp_since_last_treat || 0}
+              totalTreatsEarned={gamification.total_treats_earned || 0}
+            />
+          </div>
+        </div>
       )}
 
       {/* Treat Unlocked Popup */}
